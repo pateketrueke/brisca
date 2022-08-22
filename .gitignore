@@ -1,0 +1,9 @@
+*.log
+*.todo
+.env
+.DS_Store
+cache.json
+build
+generated
+node_modules
+package-lock.json
