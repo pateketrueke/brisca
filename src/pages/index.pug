@@ -1,6 +1,14 @@
 doctype html
 html.full.no-js(lang='en')
   head
+    if process.env.NODE_ENV === 'production'
+      script(src='https://www.googletagmanager.com/gtag/js?id=#{process.env.GA_CODE}' async)
+      script.
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', '#{process.env.GA_CODE}');
+
     meta(name='package' content=`${pkg.name} v${pkg.version}`)
     meta(name='revision' content=SOURCE_VERSION)
 
@@ -13,6 +21,7 @@ html.full.no-js(lang='en')
     meta(name='viewport' content='width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no')
 
     base(href=(ROOT || '') + '/')
+    title Brisca
 
     link(rel='prefetch' href='/images/bkg.png')
     each i in [1, 2, 3, 4, 5, 6, 7, 10, 11, 12]

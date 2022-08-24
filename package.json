@@ -7,7 +7,6 @@
   "scripts": {
     "start": "npm run dev",
     "dev": "npm run build -- -w",
-    "dist": "npm run build -- -q",
     "test": "npm run mocha -- tests",
     "watch": "npm run test -- -w",
     "mocha": "_mocha --loader=testdouble --parallel --",

@@ -2,7 +2,11 @@ SOURCE_VERSION ?= $(shell git rev-parse --short=7 HEAD)
 NODE_ENV ?= development
 PWD=$(shell pwd)
 
-export NODE_ENV SOURCE_VERSION
+ifneq ($(wildcard .env),)
+	include .env
+endif
+
+.EXPORT_ALL_VARIABLES:
 
 .PHONY: build
 
