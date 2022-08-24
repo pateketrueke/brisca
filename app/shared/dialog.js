@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-named-default
-import { default as Dialog } from '~/src/app/components/Dialog.svelte';
+import { default as Dialog } from '../components/Dialog.svelte';
 
 export function setDialog(props, callback, component) {
   if (typeof callback === 'object') {

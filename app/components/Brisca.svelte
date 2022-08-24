@@ -2,12 +2,12 @@
   import { onMount } from 'svelte';
   import { Confetti } from 'svelte-confetti';
 
-  import { setDialog } from '~/src/app/shared/dialog';
+  import { setDialog } from '../shared/dialog';
 
   import {
     EMPTY_GAME, BRISCA_PRIZE, BRISCA_VALUES,
     random, rotateAt, takeNth, getBriscaDeck, isInvalidBrisca,
-  } from '~/src/app/shared/helpers';
+  } from '../shared/helpers';
 
   import SvgIcon from './SvgIcon.svelte';
   import Dialog from './Dialog.svelte';

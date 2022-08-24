@@ -24,3 +24,9 @@ deps:
 
 clean:
 	@rm -rf build cache.json
+
+build:
+	@docker build --build-arg SOURCE_VERSION -t brisca .
+
+start:
+	@docker run -p 8085:8080 brisca

@@ -2,27 +2,25 @@
   "name": "decks",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "api/server.js",
   "type": "module",
   "scripts": {
     "start": "npm run dev",
     "dev": "npm run build -- -w",
-    "test": "npm run mocha -- tests",
-    "watch": "npm run test -- -w",
-    "mocha": "_mocha --loader=testdouble --parallel --",
-    "check": "eslint 'src/**/*.{js,pug,svelte}' 'tests/**/*.js'",
-    "build": "mortero -dcpublic:. -X'{lib,shared,components}' -ecss.less -I.gitignore --platform browser",
-    "predist": "npm run check"
+    "dist": "npm run build -- -fq",
+    "test": "node test",
+    "pretest": "npm run check",
+    "watch": "nodemon -w api -w app -w tests -x npm test",
+    "check": "eslint 'api/**/*.js' 'app/**/*.{js,pug,svelte}'",
+    "build": "mortero app -dcpublic:. -P/api:3001 -Eecss.less -I.gitignore --platform browser"
   },
   "mortero": {
-    "bundle": [
-      "**/index.js",
-      "**/scripts/*.js"
+    "bundle": "app/*.js",
+    "exclude": [
+      "{lib,shared,components}"
     ],
     "rename": [
-      "src/**:{filepath/1}",
-      "**/index.(css|js):{basedir}{ext}",
-      "**/{pages,resources}/**:{filepath/1}",
+      "app/**:{filepath/1}",
       "**/!(index).html:{basedir}/{name}/index.html"
     ],
     "options": {
@@ -41,24 +39,29 @@
   "author": "Alvaro Cabrera <yo@soypache.co>",
   "license": "MIT",
   "devDependencies": {
-    "chai": "^4.3.6",
-    "eslint": "^7.27.0",
+    "@japa/expect": "^2.0.1",
+    "@japa/runner": "^2.2.2",
+    "@japa/spec-reporter": "^1.3.2",
+    "eslint": "^8.30.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-pug": "^1.2.3",
-    "eslint-plugin-svelte3": "^3.2.0",
+    "eslint-plugin-svelte3": "^4.0.0",
     "less": "^4.1.1",
     "less-plugin-autoprefix": "^2.0.0",
     "live-server": "^1.2.2",
-    "mocha": "^10.0.0",
-    "mortero": "~0.0.81",
+    "mortero": "^0.0.92",
     "pug": "^3.0.2",
     "svelte": "^3.49.0",
     "svelte-confetti": "^1.2.0",
     "testdouble": "^3.16.6"
   },
   "dependencies": {
-    "grown": "^1.4.3",
-    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.10.0"
+    "@grown/conn": "^0.0.42",
+    "@grown/model": "^0.0.54",
+    "@grown/router": "^0.0.19",
+    "@grown/session": "^0.0.27",
+    "grown": "^1.4.4",
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.15.0"
   }
 }
