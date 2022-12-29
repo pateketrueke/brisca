@@ -10,6 +10,9 @@ endif
 
 .PHONY: build
 
+ci: deps
+	@npm test
+
 dev: deps
 	@npm run dev & npm run watch -- .
 
