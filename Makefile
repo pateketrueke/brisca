@@ -11,13 +11,16 @@ endif
 .PHONY: build
 
 dev: deps
-	@npm run dev
+	@npm run dev & npm run watch -- .
 
 test: deps
-	@npm run check
+	@npm test
 
 dist: deps
 	@NODE_ENV=production npm run dist -- $(DIST_FLAGS)
+
+repl: deps
+	@npx grown console models:api/models.js
 
 deps:
 	@(((ls node_modules | grep .) > /dev/null 2>&1) || npm i) || true

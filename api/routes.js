@@ -1,3 +1,2 @@
-export default router => router()
-  .namespace('/', group => group({ lookup: 'Handlers.%Controller' })
+export default router => router({ lookup: 'Handlers.%Controller' }, group => group()
     .get('/health', { to: 'Test.getOK' }));

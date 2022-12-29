@@ -7,7 +7,12 @@ Grown.use(import('@grown/model'));
 Grown.use(import('@grown/router'));
 Grown.use(import('@grown/session'));
 
+Grown.use(import('./models.js'));
 Grown.use(import('./controllers/index.js'));
+
+import {
+  Unauthorized,
+} from './exceptions.js';
 
 let app;
 export default Grown.ready(async () => {
@@ -18,6 +23,7 @@ export default Grown.ready(async () => {
     trust: 'proxy',
   });
 
+  app.on('listen', () => Grown.Models.connect());
   app.plug([
     Grown.Conn,
     Grown.Session,
@@ -25,7 +31,6 @@ export default Grown.ready(async () => {
       routes: await import('./routes.js'),
       default_pipelines: {
         auth: ctx => {
-          if (process.env.DISABLE_AUTH === 'YES') return;
           if (ctx.req_headers.authorization) {
             const [, token] = ctx.req_headers.authorization.split(' ');
 
