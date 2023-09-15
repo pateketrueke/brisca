@@ -3,16 +3,15 @@ import grown from 'grown';
 const Grown = grown();
 
 Grown.use(import('@grown/conn'));
-Grown.use(import('@grown/model'));
 Grown.use(import('@grown/router'));
 Grown.use(import('@grown/session'));
 
-Grown.use(import('./models.js'));
+Grown.use(import('./database/models.js'));
 Grown.use(import('./controllers/index.js'));
 
 import {
   Unauthorized,
-} from './exceptions.js';
+} from './errors.js';
 
 let app;
 export default Grown.ready(async () => {

@@ -22,9 +22,6 @@ test: deps
 dist: deps
 	@NODE_ENV=production npm run dist -- $(DIST_FLAGS)
 
-repl: deps
-	@npx grown console models:api/models.js
-
 deps:
 	@(((ls node_modules | grep .) > /dev/null 2>&1) || npm i) || true
 
@@ -36,3 +33,6 @@ build:
 
 start:
 	@docker run -p 8085:8080 brisca
+
+migrate:
+	@npx drizzle-kit generate:sqlite --out=api/database/migrations --schema=api/database/schema.js
