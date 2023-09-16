@@ -13,7 +13,7 @@ endif
 ci: deps
 	@npm test
 
-dev: deps
+dev: stop deps
 	@npm run dev & npm run watch -- .
 
 test: deps
@@ -21,6 +21,9 @@ test: deps
 
 dist: deps
 	@NODE_ENV=production npm run dist -- $(DIST_FLAGS)
+
+stop:
+	@fkill -s :8080 :3001
 
 deps:
 	@(((ls node_modules | grep .) > /dev/null 2>&1) || npm i) || true

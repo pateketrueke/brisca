@@ -1,6 +1,6 @@
 {
-  "name": "decks",
-  "version": "1.0.0",
+  "name": "brisca",
+  "version": "0.0.0",
   "description": "",
   "main": "api/server.js",
   "type": "module",
@@ -52,10 +52,10 @@
     "less": "^4.1.1",
     "less-plugin-autoprefix": "^2.0.0",
     "live-server": "^1.2.2",
-    "mortero": "^0.0.94",
+    "mortero": "^0.0.115",
     "node-dev": "^8.0.0",
+    "partykit": "0.0.15",
     "pug": "^3.0.2",
-    "sqlite3": "^5.1.4",
     "svelte": "^3.49.0",
     "svelte-confetti": "^1.2.0",
     "testdouble": "^3.16.6"
@@ -67,6 +67,7 @@
     "@libsql/client": "^0.3.4",
     "drizzle-orm": "^0.28.6",
     "grown": "^1.4.23",
+    "partysocket": "0.0.6",
     "therror": "^4.1.1",
     "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.15.0"
   }

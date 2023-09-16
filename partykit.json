@@ -1,0 +1,9 @@
+{
+  "name": "decks-party",
+  "main": "party/server.js",
+  "serve": {
+    "path": "build",
+    "build": "party/client.js",
+    "singlePageApp": true
+  }
+}
