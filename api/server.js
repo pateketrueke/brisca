@@ -2,7 +2,6 @@ import grown from 'grown';
 
 const Grown = grown();
 
-Grown.use(import('@grown/conn'));
 Grown.use(import('@grown/router'));
 Grown.use(import('@grown/session'));
 
@@ -24,7 +23,6 @@ export default Grown.ready(async () => {
 
   app.on('listen', () => Grown.Models.connect());
   app.plug([
-    Grown.Conn,
     Grown.Session,
     Grown.Router({
       routes: await import('./routes.js'),

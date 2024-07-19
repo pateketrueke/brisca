@@ -60,7 +60,6 @@
     "testdouble": "^3.16.6"
   },
   "dependencies": {
-    "@grown/conn": "^0.0.44",
     "@grown/router": "^0.0.21",
     "@grown/session": "^0.0.28",
     "@libsql/client": "^0.3.4",
