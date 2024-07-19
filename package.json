@@ -52,12 +52,12 @@
     "less": "^4.1.1",
     "less-plugin-autoprefix": "^2.0.0",
     "live-server": "^1.2.2",
-    "mortero": "^0.0.115",
+    "mortero": "^0.0.123",
     "node-dev": "^8.0.0",
     "partykit": "0.0.15",
     "pug": "^3.0.2",
-    "svelte": "^3.49.0",
-    "svelte-confetti": "^1.2.0",
+    "svelte": "^3.59.2",
+    "svelte-confetti": "=1.2.0",
     "testdouble": "^3.16.6"
   },
   "dependencies": {
