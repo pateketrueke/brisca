@@ -16,7 +16,7 @@ import {
 let app;
 export default Grown.ready(async () => {
   app = new Grown({
-    uws: true,
+    uws: false,
     cors: true,
     cache: false,
     trust: 'proxy',
