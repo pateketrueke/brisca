@@ -2,8 +2,6 @@
   import { onMount } from 'svelte';
   import { Confetti } from 'svelte-confetti';
 
-  // import { setDialog } from '../lib/shared/dialog';
-
   import {
     EMPTY_GAME,
     BRISCA_PRIZE,
@@ -21,10 +19,6 @@
 
   // fix this later
   const VERSION = 'HEAD';
-
-  function setDialog(...args) {
-    console.log('TODO', args);
-  }
 
   let game = { ...EMPTY_GAME };
   try {
@@ -45,6 +39,52 @@
     game.length;
   $: pendingPlay = game.players.some((player) => !game[player].set.length);
   $: allPlayed = game.players.every((player) => game[player].set.length > 0);
+
+  /**
+   * @type {any}
+   */
+  let timeout;
+
+  /**
+   * @type {any}
+   */
+  let customDialog = null;
+
+  /**
+   * @type {(callback: function) => void}
+   */
+  function closeDialog(callback) {
+    clearTimeout(timeout);
+    customDialog = null;
+    callback?.();
+  }
+
+  /**
+   * @type {(props: any, callback: function) => void}
+   */
+  function setDialog(props, callback) {
+    if (customDialog) {
+      customDialog.reject();
+    }
+
+    if (props.timeout) {
+      timeout = setTimeout(() => closeDialog(callback), props.timeout);
+    }
+
+    if (!callback) {
+      customDialog = { props };
+    } else {
+      new Promise((resolve, reject) => {
+        customDialog = {
+          props,
+          reject: reject,
+          resolve: resolve,
+        };
+      }).finally(() => {
+        closeDialog(callback);
+      });
+    }
+  }
 
   function syncGame(state) {
     game = state;
@@ -437,13 +477,13 @@
         {player}'s turn:
       </h3>
       <span class="flex space justify">
-        {#each cards as card, o}
+        {#each cards as card, o (card.number)}
           <Card
+            onClick={() => chooseIt(card)}
             disabled={isInvalid(card)}
             focused={o === selected}
             type="button"
             value={card}
-            on:click={() => chooseIt(card)}
           />
         {/each}
       </span>
@@ -453,6 +493,15 @@
   </div>
 </Dialog>
 
+{#if customDialog}
+  <Dialog
+      attributes={customDialog.props}
+      onConfirm={customDialog.resolve}
+      onAction={customDialog.resolve}
+      onCancel={customDialog.reject}
+    />
+{/if}
+
 {#if game.status === 'finished'}
   <div class="confetti">
     <Confetti
@@ -460,8 +509,8 @@
       y={[0, 0.1]}
       delay={[500, 2000]}
       infinite
-      duration="5000"
-      amount="200"
+      duration={5000}
+      amount={200}
       fallDistance="100vh"
     />
   </div>

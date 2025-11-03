@@ -1,6 +1,7 @@
 <script>
   let {
-    children,
+    onClick,
+    children = undefined,
     value = { number: 0, kind: 'UNKNOWN' },
     disabled = false,
     focused = false,
@@ -22,11 +23,11 @@
   <button
     {disabled}
     tabindex="-1"
+    onclick={onClick}
     data-cardset="{value.kind}:{value.number}"
     title="{value.number} of {value.kind}"
     class:focused
     class="card"
-    on:click
   >
     <sub>{value.number}</sub>
     <small>{value.kind}</small>
