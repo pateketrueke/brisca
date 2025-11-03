@@ -1,9 +1,12 @@
 <script>
-  export let value = { number: 0, kind: 'UNKNOWN' };
-  export let disabled = false;
-  export let focused = false;
-  export let number = 0;
-  export let type = '';
+  let {
+    children,
+    value = { number: 0, kind: 'UNKNOWN' },
+    disabled = false,
+    focused = false,
+    number = 0,
+    type = '',
+  } = $props();
 </script>
 
 {#if type === 'deck'}
@@ -11,7 +14,7 @@
     <span class="card deck" title="{number} cards left">
       <small>{number}</small>
     </span>
-    <slot />
+    {@render children?.()}
   {:else}
     <button class="card deck" title="" disabled></button>
   {/if}

@@ -20,9 +20,11 @@
     warn: IconWarn,
   };
 
-  export let fill = 'currentColor';
-  export let size = '16';
-  export let name = '';
+  let {
+    fill = 'currentColor',
+    size = '16',
+    name = '',
+  } = $props();
 </script>
 
 <svg width={size} height={size}>

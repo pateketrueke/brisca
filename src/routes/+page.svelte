@@ -1,5 +1,5 @@
 <script>
-    import Brisca from '../components/Brisca.svelte';
+    import App from '../components/App.svelte';
 </script>
 
-<Brisca />
+<App />

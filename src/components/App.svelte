@@ -1,7 +1,5 @@
 <script>
   import { onMount } from 'svelte';
-
-  // @ts-expect-error
   import { Confetti } from 'svelte-confetti';
 
   // import { setDialog } from '../lib/shared/dialog';
