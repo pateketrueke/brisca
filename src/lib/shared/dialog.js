@@ -1,5 +1,7 @@
+import { mount } from 'svelte';
+
 // eslint-disable-next-line import/no-named-default
-import { default as Dialog } from '../components/Dialog.svelte';
+import { default as Dialog } from '../../components/Dialog.svelte';
 
 export function setDialog(props, callback, component) {
   if (typeof callback === 'object') {
@@ -7,16 +9,16 @@ export function setDialog(props, callback, component) {
     callback = null;
   }
 
-  const dialog = new Dialog({
+  const dialog = mount(Dialog, {
     target: document.body,
-    props: {
-      component,
-      attributes: props,
-    },
+    // props: $$state({
+    //   component,
+    //   attributes: props,
+    // }),
   });
 
   setTimeout(() => {
-    dialog.$$set({ hidden: false });
+    dialog.$set({ hidden: false });
   }, 60);
 
   const deferred = {};
@@ -37,7 +39,7 @@ export function setDialog(props, callback, component) {
   }).catch(() => {
     deferred.rejected = true;
   }).finally(() => {
-    dialog.$$set({ hidden: true });
+    dialog.$set({ hidden: true });
     setTimeout(() => {
       dialog.$destroy();
     }, 60);

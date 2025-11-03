@@ -1,4 +1,4 @@
-SOURCE_VERSION ?= $(shell git rev-parse --short=7 HEAD)
+GIT_REVISION ?= $(shell git rev-parse --short=7 HEAD)
 NODE_ENV ?= development
 PWD=$(shell pwd)
 
@@ -13,17 +13,14 @@ endif
 ci: deps
 	@npm test
 
-dev: stop deps
-	@npm run dev & npm run watch -- .
+dev: deps
+	@npm run dev # & npm run watch -- .
 
 test: deps
 	@npm test
 
 dist: deps
 	@NODE_ENV=production npm run dist -- $(DIST_FLAGS)
-
-stop:
-	@fkill -s :8080 :3001
 
 deps:
 	@(((ls node_modules | grep .) > /dev/null 2>&1) || npm i) || true

@@ -1,9 +1,9 @@
 <script>
   export let value = { number: 0, kind: 'UNKNOWN' };
-  export let disabled;
-  export let focused;
-  export let number;
-  export let type;
+  export let disabled = false;
+  export let focused = false;
+  export let number = 0;
+  export let type = '';
 </script>
 
 {#if type === 'deck'}
@@ -13,16 +13,28 @@
     </span>
     <slot />
   {:else}
-    <button class="card deck" disabled />
+    <button class="card deck" title="" disabled></button>
   {/if}
 {:else if type === 'button'}
-  <button {disabled} tabindex="-1" data-cardset="{value.kind}:{value.number}" title="{value.number} of {value.kind}" class:focused class="card" on:click>
+  <button
+    {disabled}
+    tabindex="-1"
+    data-cardset="{value.kind}:{value.number}"
+    title="{value.number} of {value.kind}"
+    class:focused
+    class="card"
+    on:click
+  >
     <sub>{value.number}</sub>
     <small>{value.kind}</small>
     <sup>{value.number}</sup>
   </button>
 {:else}
-  <span data-cardset="{value.kind}:{value.number}" title="{value.number} of {value.kind}" class="card">
+  <span
+    data-cardset="{value.kind}:{value.number}"
+    title="{value.number} of {value.kind}"
+    class="card"
+  >
     <sub>{value.number}</sub>
     <small>{value.kind}</small>
     <sup>{value.number}</sup>

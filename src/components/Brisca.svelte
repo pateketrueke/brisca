@@ -1,37 +1,52 @@
 <script>
   import { onMount } from 'svelte';
+
+  // @ts-expect-error
   import { Confetti } from 'svelte-confetti';
 
-  import { setDialog } from '../shared/dialog';
+  // import { setDialog } from '../lib/shared/dialog';
 
   import {
-    EMPTY_GAME, BRISCA_PRIZE, BRISCA_VALUES,
-    random, rotateAt, takeNth, getBriscaDeck, isInvalidBrisca,
-  } from '../shared/helpers';
+    EMPTY_GAME,
+    BRISCA_PRIZE,
+    BRISCA_VALUES,
+    random,
+    rotateAt,
+    takeNth,
+    getBriscaDeck,
+    isInvalidBrisca,
+  } from '../lib/shared/helpers';
 
   import SvgIcon from './SvgIcon.svelte';
   import Dialog from './Dialog.svelte';
   import Card from './Card.svelte';
 
-  const VERSION = process.env.SOURCE_VERSION
-    ? process.env.SOURCE_VERSION.substr(0, 7)
-    : 'HEAD';
+  // fix this later
+  const VERSION = 'HEAD';
+
+  function setDialog(...args) {
+    console.log('TODO', args);
+  }
 
   let game = { ...EMPTY_GAME };
   try {
     if (localStorage.$game) {
       game = JSON.parse(localStorage.$game);
-      game.status = game.status !== 'finished'
-        ? game.status
-        : 'pending';
+      game.status = game.status !== 'finished' ? game.status : 'pending';
     }
   } catch (e) {
     // ignore
   }
 
-  $: remainingTurns = (game.total - game.players.reduce((count, player) => count + game[player].stack.length, 0)) / game.length;
-  $: pendingPlay = game.players.some(player => !game[player].set.length);
-  $: allPlayed = game.players.every(player => game[player].set.length > 0);
+  $: remainingTurns =
+    (game.total -
+      game.players.reduce(
+        (count, player) => count + game[player].stack.length,
+        0
+      )) /
+    game.length;
+  $: pendingPlay = game.players.some((player) => !game[player].set.length);
+  $: allPlayed = game.players.every((player) => game[player].set.length > 0);
 
   function syncGame(state) {
     game = state;
@@ -46,17 +61,27 @@
     const cardset = random(getBriscaDeck());
 
     if (game.length === '3') {
-      takeNth(cardset, 1, card => card.number === 2);
+      takeNth(cardset, 1, (card) => card.number === 2);
     }
 
-    const names = Array.from({ length: game.length }).map((_, i) => `p${i + 1}`);
+    const names = Array.from({ length: game.length }).map(
+      (_, i) => `p${i + 1}`
+    );
     const sorted = rotateAt(names, 'p1');
     const limited = cardset.length;
 
-    const users = sorted.reduce((memo, cur) => Object.assign(memo, {
-      [cur]: { set: [], hand: takeNth(cardset, 3), stack: [] },
-    }), {});
-    const triumph = takeNth(cardset, 1, card => !(card.number in BRISCA_VALUES))[0];
+    const users = sorted.reduce(
+      (memo, cur) =>
+        Object.assign(memo, {
+          [cur]: { set: [], hand: takeNth(cardset, 3), stack: [] },
+        }),
+      {}
+    );
+    const triumph = takeNth(
+      cardset,
+      1,
+      (card) => !(card.number in BRISCA_VALUES)
+    )[0];
 
     syncGame({
       ...users,
@@ -75,7 +100,7 @@
   let pending;
   function checkPlay() {
     let winner;
-    game.ordered.forEach(player => {
+    game.ordered.forEach((player) => {
       const subset = game[player].set[0];
       if (!winner) {
         winner = { player, subset };
@@ -107,22 +132,40 @@
     }
 
     const sorted = rotateAt(game.players, winner.player);
-    const stack = game.players.reduce((memo, player) => memo.concat(game[player].set), []);
-    const users = sorted.reduce((memo, player) => Object.assign(memo, {
-      [player]: {
-        ...game[player],
-        played: undefined,
-        set: [],
-        hand: game[player].hand.concat(game.deck.splice(0, 1)),
-        stack: game[player].stack.concat(player === winner.player ? stack : []),
-      },
-    }), {});
+    const stack = game.players.reduce(
+      (memo, player) => memo.concat(game[player].set),
+      []
+    );
+    const users = sorted.reduce(
+      (memo, player) =>
+        Object.assign(memo, {
+          [player]: {
+            ...game[player],
+            played: undefined,
+            set: [],
+            hand: game[player].hand.concat(game.deck.splice(0, 1)),
+            stack: game[player].stack.concat(
+              player === winner.player ? stack : []
+            ),
+          },
+        }),
+      {}
+    );
 
     if (!game.deck.length && remainingTurns === 1) {
-      const scores = sorted.reduce((memo, player) => memo.concat({
-        name: player,
-        score: users[player].stack.reduce((total, card) => total + (BRISCA_VALUES[card.number] || 0), 0),
-      }), []).sort((a, b) => b.score - a.score);
+      const scores = sorted
+        .reduce(
+          (memo, player) =>
+            memo.concat({
+              name: player,
+              score: users[player].stack.reduce(
+                (total, card) => total + (BRISCA_VALUES[card.number] || 0),
+                0
+              ),
+            }),
+          []
+        )
+        .sort((a, b) => b.score - a.score);
 
       syncGame({
         ...game,
@@ -131,53 +174,62 @@
         winner: scores[0].name,
       });
 
-      pending = setDialog({
-        icon: 'at',
-        action: 'CLOSE',
-        message: `${scores[0].name} won the game!`,
-        description: `${scores.map((player, i) => `${BRISCA_PRIZE[i]} @${player.name} scored ${player.score} points`).join(', <br />')}`,
-      }, () => {
-        pending = undefined;
-        syncGame({ ...EMPTY_GAME });
-      });
+      pending = setDialog(
+        {
+          icon: 'at',
+          action: 'CLOSE',
+          message: `${scores[0].name} won the game!`,
+          description: `${scores.map((player, i) => `${BRISCA_PRIZE[i]} @${player.name} scored ${player.score} points`).join(', <br />')}`,
+        },
+        () => {
+          pending = undefined;
+          syncGame({ ...EMPTY_GAME });
+        }
+      );
       return;
     }
 
     syncGame({ ...game, winner: winner.player });
-    pending = setDialog({
-      icon: 'at',
-      message: `${winner.player} won this hand!`,
-      action: 'CONTINUE',
-    }, () => {
-      pending = undefined;
-      syncGame({
-        ...game,
-        ...users,
-        ordered: sorted,
-        turn: winner.player,
-        winner: winner.player,
-      });
-      setDialog({
+    pending = setDialog(
+      {
         icon: 'at',
-        message: `${winner.player} opens the game`,
-        timeout: 1000,
-      });
-    });
+        message: `${winner.player} won this hand!`,
+        action: 'CONTINUE',
+      },
+      () => {
+        pending = undefined;
+        syncGame({
+          ...game,
+          ...users,
+          ordered: sorted,
+          turn: winner.player,
+          winner: winner.player,
+        });
+        setDialog({
+          icon: 'at',
+          message: `${winner.player} opens the game`,
+          timeout: 1000,
+        });
+      }
+    );
   }
 
   let canceling;
   function cancelGame() {
     canceling = true;
-    pending = setDialog({
-      confirm: 'Do you want to end this game?',
-      continue: 'EXIT GAME',
-    }, () => {
-      if (pending.resolved) {
-        syncGame({ ...EMPTY_GAME });
+    pending = setDialog(
+      {
+        confirm: 'Do you want to end this game?',
+        continue: 'EXIT GAME',
+      },
+      () => {
+        if (pending.resolved) {
+          syncGame({ ...EMPTY_GAME });
+        }
+        pending = undefined;
+        canceling = undefined;
       }
-      pending = undefined;
-      canceling = undefined;
-    });
+    );
   }
 
   let player;
@@ -189,9 +241,9 @@
   }
 
   function chooseIt(card) {
-    const offset = game.players.findIndex(x => player === x);
+    const offset = game.players.findIndex((x) => player === x);
     const next = (offset + 1) % game.players.length;
-    const idx = cards.findIndex(x => x === card);
+    const idx = cards.findIndex((x) => x === card);
     const set = cards.splice(idx, 1);
 
     syncGame({
@@ -211,7 +263,12 @@
 
   function isInvalid(card) {
     if (!game.deck.length && game.turn !== game.winner) {
-      return isInvalidBrisca(cards, card, game[game.winner].set[0], game.triumph);
+      return isInvalidBrisca(
+        cards,
+        card,
+        game[game.winner].set[0],
+        game.triumph
+      );
     }
   }
 
@@ -239,7 +296,7 @@
         }
         if (offset !== selected) {
           if (!cards[offset] || isInvalid(cards[offset])) {
-            selected = cards.findIndex(x => !isInvalid(x));
+            selected = cards.findIndex((x) => !isInvalid(x));
           } else {
             selected = offset;
           }
@@ -279,10 +336,19 @@
   <h1 class="reset">Brisca <small>{VERSION}</small></h1>
   <span>
     {#if game.status === 'started'}
-      <button class="link" tabindex="-1" disabled={canceling} on:click={cancelGame}>Exit game</button>
+      <button
+        class="link"
+        tabindex="-1"
+        disabled={canceling}
+        on:click={cancelGame}>Exit game</button
+      >
     {:else}
       <small class="dimmed">Players:</small>
-      <select class="action" bind:value={game.length} disabled="{game.status !== 'pending'}">
+      <select
+        class="action"
+        bind:value={game.length}
+        disabled={game.status !== 'pending'}
+      >
         <option>2</option>
         <option>3</option>
         <option>4</option>
@@ -300,7 +366,7 @@
 
   {#if game.status === 'started'}
     <ul data-players class="flex wrapped justify inline reset">
-      {#each game.players as name}
+      {#each game.players as name (name)}
         <li class="player">
           <span class="icons space v-flex">
             {#if name === game.winner}
@@ -318,11 +384,17 @@
             </svg>
             -->
           </span>
-          <button class="action flex center" tabindex="-1" disabled="{game.turn !== name || game[name].played}" title="{game[name].stack.length} cards" on:click={drawCards}>
+          <button
+            class="action flex center"
+            tabindex="-1"
+            disabled={game.turn !== name || game[name].played}
+            title="{game[name].stack.length} cards"
+            on:click={drawCards}
+          >
             <SvgIcon name="at" size="12" />
             {name}
           </button>
-          {#each game[name].set as card}
+          {#each game[name].set as card (card.number)}
             <Card value={card} />
           {/each}
         </li>
@@ -339,7 +411,12 @@
     {/if}
 
     {#if game.status === 'started'}
-      <button class="action flex space" on:click={checkPlay} tabindex="-1" disabled="{!game.players.every(x => game[x].played)}">
+      <button
+        class="action flex space"
+        on:click={checkPlay}
+        tabindex="-1"
+        disabled={!game.players.every((x) => game[x].played)}
+      >
         <SvgIcon name="enter" />
         OK
       </button>
@@ -363,7 +440,13 @@
       </h3>
       <span class="flex space justify">
         {#each cards as card, o}
-          <Card disabled={isInvalid(card)} focused="{o === selected}" type="button" value={card} on:click="{() => chooseIt(card)}" />
+          <Card
+            disabled={isInvalid(card)}
+            focused={o === selected}
+            type="button"
+            value={card}
+            on:click={() => chooseIt(card)}
+          />
         {/each}
       </span>
     {:else}
@@ -374,6 +457,14 @@
 
 {#if game.status === 'finished'}
   <div class="confetti">
-    <Confetti x={[-5, 5]} y={[0, 0.1]} delay={[500, 2000]} infinite duration=5000 amount=200 fallDistance="100vh" />
+    <Confetti
+      x={[-5, 5]}
+      y={[0, 0.1]}
+      delay={[500, 2000]}
+      infinite
+      duration="5000"
+      amount="200"
+      fallDistance="100vh"
+    />
   </div>
 {/if}

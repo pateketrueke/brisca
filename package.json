@@ -26,11 +26,14 @@
 		"eslint": "^9.38.0",
 		"eslint-plugin-svelte": "^3.12.4",
 		"globals": "^16.4.0",
+		"less": "^4.4.2",
 		"publint": "^0.3.14",
 		"svelte": "^5.41.0",
 		"svelte-check": "^4.3.3",
+		"svelte-confetti": "^2.3.2",
 		"typescript": "^5.9.3",
-		"vite": "^7.1.10"
+		"vite": "^7.1.10",
+		"vite-plugin-svg-sprite": "^0.6.3"
 	},
 	"keywords": [
 		"svelte"
