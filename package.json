@@ -19,6 +19,7 @@
 		"@japa/expect": "^3.0.6",
 		"@japa/runner": "^4.4.0",
 		"@sveltejs/adapter-auto": "^7.0.0",
+		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.47.1",
 		"@sveltejs/package": "^2.5.4",
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
@@ -31,7 +32,6 @@
 		"svelte": "^5.41.0",
 		"svelte-check": "^4.3.3",
 		"svelte-confetti": "^2.3.2",
-		"typescript": "^5.9.3",
 		"vite": "^7.1.10",
 		"vite-plugin-svg-sprite": "^0.6.3"
 	},
