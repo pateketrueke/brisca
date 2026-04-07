@@ -152,11 +152,11 @@ function scoreLeadCard(game, player, card) {
   const stance = getBotStance(game, player);
   const points = getCardPoints(card);
   const isTrump = card.kind === game.triumph.kind;
-  const reservePenalty = (isTrump ? 10 : 0) + points * 2 + getCardRank(card) / 10;
+  const reservePenalty = (isTrump ? 12 : 0) + points * 6 + getCardRank(card) / 5;
 
   if (stance === 'evasive') return -reservePenalty - points * 3;
   if (stance === 'balanced') return isTrump || isLikelyPointCard(card) ? -reservePenalty : 6 - reservePenalty;
-  return points * 3 + (isTrump ? 4 : 0) + getCardRank(card) / 10;
+  return isTrump || isLikelyPointCard(card) ? -reservePenalty : 8 - reservePenalty;
 }
 
 function scoreFollowCard(game, player, card, cards) {

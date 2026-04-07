@@ -151,4 +151,28 @@ test.group('Brisca bot', () => {
 
     expect(getBotStance(game, 'p2')).toBe('aggressive');
   });
+
+  test('does not lead with high trump just because it is aggressive', ({ expect }) => {
+    const game = createGame({
+      turn: 'p2',
+      winner: 'p2',
+      p1: {
+        hand: [],
+        set: [],
+        stack: [],
+      },
+      p2: {
+        hand: [
+          { kind: 'BASTOS', number: 1 },
+          { kind: 'OROS', number: 3 },
+          { kind: 'COPAS', number: 4 },
+        ],
+        set: [],
+        stack: [{ kind: 'OROS', number: 1 }],
+      },
+    });
+
+    expect(getBotStance(game, 'p2')).toBe('aggressive');
+    expect(chooseBotCard(game, 'p2')).toEqual({ kind: 'COPAS', number: 4 });
+  });
 });
