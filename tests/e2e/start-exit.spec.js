@@ -52,3 +52,20 @@ test('time-travels gameplay history in read-only replay mode', async ({ page }) 
   await expect(page.getByText(/Replay 1\//)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Exit game' })).toBeDisabled();
 });
+
+test('auto-commits the hand when Auto OK is enabled', async ({ page }) => {
+  await page
+    .locator('.seat-control')
+    .filter({ hasText: 'p2' })
+    .locator('select')
+    .selectOption('human');
+  await page.getByRole('button', { name: 'START' }).click();
+  await page.getByLabel('Auto OK').check();
+
+  await page.getByRole('button', { name: 'p1' }).click();
+  await page.locator('.overlay button.card').first().click();
+  await page.getByRole('button', { name: 'p2' }).click();
+  await page.locator('.overlay button.card').first().click();
+
+  await expect(page.getByText(/won this hand!/)).toBeVisible();
+});

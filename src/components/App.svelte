@@ -77,6 +77,12 @@
   let customDialog = null;
   let botTimeout;
   let botCheckTimeout;
+  let autoCheck = false;
+  try {
+    autoCheck = localStorage.$autoCheck === 'true';
+  } catch {
+    // ignore
+  }
 
   /**
    * @type {(callback: function) => void}
@@ -166,6 +172,14 @@
 
   function updateLength() {
     game = { ...game, bots: normalizeBots() };
+  }
+
+  function updateAutoCheck() {
+    try {
+      localStorage.setItem('$autoCheck', String(autoCheck));
+    } catch {
+      // ignore
+    }
   }
 
   function startGame() {
@@ -430,7 +444,7 @@
   $: if (
     game.status === 'started' &&
     allPlayed &&
-    hasBots() &&
+    (autoCheck || hasBots()) &&
     !player &&
     !customDialog &&
     !isReplaying
@@ -611,15 +625,27 @@
     {/if}
 
     {#if viewGame.status === 'started'}
-      <button
-        class="action flex space"
-        on:click={checkPlay}
-        tabindex="-1"
-        disabled={isReplaying || !viewGame.players.every((x) => viewGame[x].played)}
-      >
-        <SvgIcon name="enter" />
-        OK
-      </button>
+      <span class="commit-controls">
+        <button
+          class="action flex space"
+          on:click={checkPlay}
+          tabindex="-1"
+          disabled={isReplaying || !viewGame.players.every((x) => viewGame[x].played)}
+        >
+          <SvgIcon name="enter" />
+          OK
+        </button>
+        <label class="auto-check flex center space">
+          <input
+            aria-label="Auto OK"
+            type="checkbox"
+            bind:checked={autoCheck}
+            disabled={isReplaying}
+            on:change={updateAutoCheck}
+          />
+          <small>Auto OK</small>
+        </label>
+      </span>
     {/if}
   </span>
 </div>
