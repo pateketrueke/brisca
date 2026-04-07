@@ -77,6 +77,7 @@
   let customDialog = null;
   let botTimeout;
   let botCheckTimeout;
+  let autoDialogTimeout;
   let autoCheck = false;
   try {
     autoCheck = localStorage.$autoCheck === 'true';
@@ -89,8 +90,13 @@
    */
   function closeDialog(callback) {
     clearTimeout(timeout);
+    clearTimeout(autoDialogTimeout);
     customDialog = null;
     callback?.();
+  }
+
+  function shouldAutoAcceptDialog(props) {
+    return autoCheck && !isReplaying && props.action === 'CONTINUE' && !props.confirm;
   }
 
   /**
@@ -100,6 +106,7 @@
     if (customDialog) {
       customDialog.reject();
     }
+    clearTimeout(autoDialogTimeout);
 
     if (props.timeout) {
       timeout = setTimeout(() => closeDialog(callback), props.timeout);
@@ -119,6 +126,9 @@
           reject,
         };
         customDialog = dialog;
+        if (shouldAutoAcceptDialog(props)) {
+          autoDialogTimeout = setTimeout(dialog.resolve, 1000);
+        }
       }).finally(() => {
         closeDialog(callback);
       });
@@ -520,6 +530,7 @@
       removeEventListener('keyup', handleDialogs);
       clearTimeout(botTimeout);
       clearTimeout(botCheckTimeout);
+      clearTimeout(autoDialogTimeout);
     };
   });
 </script>
