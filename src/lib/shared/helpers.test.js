@@ -175,4 +175,25 @@ test.group('Brisca bot', () => {
     expect(getBotStance(game, 'p2')).toBe('aggressive');
     expect(chooseBotCard(game, 'p2')).toEqual({ kind: 'COPAS', number: 4 });
   });
+
+  test('feeds controlled points to low-score opponents instead of letting them avoid joining', ({ expect }) => {
+    const game = createGame({
+      p1: {
+        hand: [],
+        set: [{ kind: 'COPAS', number: 4 }],
+        stack: [],
+      },
+      p2: {
+        hand: [
+          { kind: 'OROS', number: 4 },
+          { kind: 'ESPADAS', number: 12 },
+          { kind: 'OROS', number: 5 },
+        ],
+        set: [],
+        stack: [{ kind: 'OROS', number: 1 }],
+      },
+    });
+
+    expect(chooseBotCard(game, 'p2')).toEqual({ kind: 'ESPADAS', number: 12 });
+  });
 });

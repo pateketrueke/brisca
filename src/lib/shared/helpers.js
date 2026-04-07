@@ -180,6 +180,15 @@ function scoreFollowCard(game, player, card, cards) {
     return winBonus - reservePenalty + (stance === 'aggressive' ? 10 : 0);
   }
 
+  if (stance === 'aggressive' && !isTrump && winner.player !== player) {
+    const winnerScore = getPlayerScore(game, winner.player);
+    const winnerProjectedScore = winnerScore + trickPoints;
+
+    if (winnerScore < 10 && winnerProjectedScore < 10) {
+      return points * 6 - getCardRank(card) / 10;
+    }
+  }
+
   return -points * 3 - (isTrump ? 20 : 0) - getCardRank(card) / 10;
 }
 
