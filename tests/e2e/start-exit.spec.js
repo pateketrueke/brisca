@@ -38,3 +38,17 @@ test('lets a bot-controlled seat auto-play after the human turn', async ({ page 
 
   await expect(page.getByText(/won this hand!/)).toBeVisible();
 });
+
+test('time-travels gameplay history in read-only replay mode', async ({ page }) => {
+  await page.getByRole('button', { name: 'START' }).click();
+  await page.getByRole('button', { name: 'p1' }).click();
+  await page.locator('.overlay button.card').first().click();
+  await expect(page.getByText(/won this hand!/)).toBeVisible();
+
+  const timeline = page.getByLabel('Gameplay timeline');
+  await expect(timeline).toBeVisible();
+  await timeline.fill('0');
+
+  await expect(page.getByText(/Replay 1\//)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Exit game' })).toBeDisabled();
+});

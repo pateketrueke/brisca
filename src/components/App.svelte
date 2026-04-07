@@ -21,27 +21,48 @@
   // fix this later
   const VERSION = 'HEAD';
 
+  function clone(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function getVisibleGame(state) {
+    return state.history?.[state.cursor] || state;
+  }
+
+  function withoutHistory(state) {
+    const rest = { ...state };
+    delete rest.history;
+    delete rest.cursor;
+    return rest;
+  }
+
   let game = { ...EMPTY_GAME };
   try {
     if (localStorage.$game) {
       game = JSON.parse(localStorage.$game);
       game.status = game.status !== 'finished' ? game.status : 'pending';
+      if (game.status !== 'pending' && !game.history) {
+        game = { ...game, history: [clone(withoutHistory(game))], cursor: 0 };
+      }
     }
   } catch {
     // ignore
   }
 
+  $: viewGame = getVisibleGame(game);
+  $: isReplaying =
+    viewGame.status !== 'pending' && game.cursor < (game.history?.length || 0) - 1;
   $: remainingTurns =
-    (game.total -
-      game.players.reduce(
-        (count, player) => count + game[player].stack.length,
+    (viewGame.total -
+      viewGame.players.reduce(
+        (count, player) => count + viewGame[player].stack.length,
         0
       )) /
-    game.length;
-  $: pendingPlay = game.players.some((player) => !game[player].set.length);
-  $: allPlayed = game.players.every((player) => game[player].set.length > 0);
+    viewGame.length;
+  $: pendingPlay = viewGame.players.some((player) => !viewGame[player].set.length);
+  $: allPlayed = viewGame.players.every((player) => viewGame[player].set.length > 0);
   $: pendingPlayers = Array.from(
-    { length: Number(game.length || 2) },
+    { length: Number(viewGame.length || 2) },
     (_, i) => `p${i + 1}`
   );
 
@@ -101,7 +122,18 @@
   }
 
   function syncGame(state) {
-    game = state;
+    let next = state;
+    if (next.status === 'started' || next.status === 'finished') {
+      const snapshot = clone(withoutHistory(next));
+      const history = next.history?.slice(0, (next.cursor ?? next.history.length - 1) + 1) || [];
+      next = {
+        ...next,
+        history: history.concat(snapshot),
+        cursor: history.length,
+      };
+    }
+
+    game = next;
     try {
       localStorage.setItem('$game', JSON.stringify(game));
     } catch {
@@ -115,11 +147,11 @@
   }
 
   function isBot(name) {
-    return (game.bots || []).includes(name);
+    return (viewGame.bots || []).includes(name);
   }
 
   function hasBots() {
-    return game.players?.some((name) => isBot(name));
+    return viewGame.players?.some((name) => isBot(name));
   }
 
   function toggleBot(name) {
@@ -180,6 +212,8 @@
 
   let pending;
   function checkPlay() {
+    if (isReplaying) return;
+
     let winner;
     game.ordered.forEach((player) => {
       const subset = game[player].set[0];
@@ -317,12 +351,14 @@
   let cards = [];
   let selected = -1;
   function drawCards() {
-    if (isBot(game.turn)) return;
+    if (isReplaying || isBot(game.turn)) return;
     player = game.turn;
     cards = game[player].hand;
   }
 
   function playCard(name, card) {
+    if (isReplaying) return;
+
     const offset = game.players.findIndex((x) => name === x);
     const next = (offset + 1) % game.players.length;
     const hand = game[name].hand.slice();
@@ -366,6 +402,7 @@
     if (
       customDialog ||
       player ||
+      isReplaying ||
       game.status !== 'started' ||
       allPlayed ||
       !isBot(game.turn) ||
@@ -383,7 +420,8 @@
     pendingPlay &&
     isBot(game.turn) &&
     !player &&
-    !customDialog
+    !customDialog &&
+    !isReplaying
   ) {
     clearTimeout(botTimeout);
     botTimeout = setTimeout(playBotTurn, 350);
@@ -394,10 +432,20 @@
     allPlayed &&
     hasBots() &&
     !player &&
-    !customDialog
+    !customDialog &&
+    !isReplaying
   ) {
     clearTimeout(botCheckTimeout);
     botCheckTimeout = setTimeout(checkPlay, 500);
+  }
+
+  function setHistoryCursor(value) {
+    player = undefined;
+    cards = [];
+    selected = -1;
+    clearTimeout(botTimeout);
+    clearTimeout(botCheckTimeout);
+    game = { ...game, cursor: Number(value) };
   }
 
   onMount(() => {
@@ -443,8 +491,8 @@
       } else if (e.keyCode === 13) {
         e.preventDefault();
         if (pending) pending.resolve();
-        else if (game.status === 'pending') startGame();
-        else if (game.status === 'started') {
+        else if (viewGame.status === 'pending') startGame();
+        else if (viewGame.status === 'started' && !isReplaying) {
           if (pendingPlay) drawCards();
           else if (allPlayed) checkPlay();
         }
@@ -465,11 +513,11 @@
 <header class="flex space center apart">
   <h1 class="reset">Brisca <small>{VERSION}</small></h1>
   <span>
-    {#if game.status === 'started'}
+    {#if viewGame.status === 'started'}
       <button
         class="link"
         tabindex="-1"
-        disabled={canceling}
+        disabled={canceling || isReplaying}
         on:click={cancelGame}>Exit game</button
       >
     {:else}
@@ -477,7 +525,7 @@
       <select
         class="action"
         bind:value={game.length}
-        disabled={game.status !== 'pending'}
+        disabled={viewGame.status !== 'pending'}
         on:change={updateLength}
       >
         <option>2</option>
@@ -506,27 +554,27 @@
 
 <div class="game-board">
   <span class="pot" data-board-pot>
-    <Card type="deck" number={game.deck.length}>
-      {#if game.triumph}<Card value={game.triumph} />{/if}
+    <Card type="deck" number={viewGame.deck.length}>
+      {#if viewGame.triumph}<Card value={viewGame.triumph} />{/if}
     </Card>
   </span>
 
-  {#if game.status === 'started'}
+  {#if viewGame.status === 'started'}
     <ul data-players class="flex wrapped justify inline reset">
-      {#each game.players as name (name)}
+      {#each viewGame.players as name (name)}
         <li class="player">
           <div class="card-info">
             <button
                 class="action flex center space"
                 tabindex="-1"
-                disabled={game.turn !== name || game[name].played}
-                title="{game[name].stack.length} cards"
+                disabled={isReplaying || viewGame.turn !== name || viewGame[name].played}
+                title="{viewGame[name].stack.length} cards"
                 on:click={drawCards}
             >
                 <SvgIcon name="at" size="12" />
                 {name}
                 <span class="icons flex">
-                    {#if name === game.winner}
+                    {#if name === viewGame.winner}
                     <SvgIcon name="star" fill="gold" />
                     {/if}
                     <!--
@@ -545,7 +593,7 @@
                     {/if}
                 </span>
             </button>
-            {#each game[name].set as card (`${card.kind}:${card.number}`)}
+            {#each viewGame[name].set as card (`${card.kind}:${card.number}`)}
                 <Card value={card} />
             {/each}
           </div>
@@ -555,19 +603,19 @@
   {/if}
 
   <span class="board-action">
-    {#if game.status === 'pending'}
+    {#if viewGame.status === 'pending'}
       <button class="action flex space" on:click={startGame} tabindex="-1">
         <SvgIcon name="enter" />
         START
       </button>
     {/if}
 
-    {#if game.status === 'started'}
+    {#if viewGame.status === 'started'}
       <button
         class="action flex space"
         on:click={checkPlay}
         tabindex="-1"
-        disabled={!game.players.every((x) => game[x].played)}
+        disabled={isReplaying || !viewGame.players.every((x) => viewGame[x].played)}
       >
         <SvgIcon name="enter" />
         OK
@@ -576,11 +624,29 @@
   </span>
 </div>
 
-{#if game.status === 'started' && remainingTurns > 0}
+{#if viewGame.status === 'started' && remainingTurns > 0}
   <small class="flex space center dimmed">
     <SvgIcon name="repeat" size="12" />
     <em>{remainingTurns} turns left</em>
   </small>
+{/if}
+
+{#if viewGame.status !== 'pending' && game.history?.length > 1}
+  <div class="timeline">
+    <label class="flex space center">
+      <small class:dimmed={!isReplaying}>
+        {isReplaying ? 'Replay' : 'Live'} {game.cursor + 1}/{game.history.length}
+      </small>
+      <input
+        aria-label="Gameplay timeline"
+        type="range"
+        min="0"
+        max={game.history.length - 1}
+        value={game.cursor}
+        on:input={(event) => setHistoryCursor(event.currentTarget.value)}
+      />
+    </label>
+  </div>
 {/if}
 
 <Dialog hidden={!cards.length}>
@@ -616,7 +682,7 @@
     />
 {/if}
 
-{#if game.status === 'finished'}
+{#if viewGame.status === 'finished'}
   <div class="confetti">
     <Confetti
       x={[-5, 5]}
