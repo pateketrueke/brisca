@@ -33,6 +33,23 @@ test('opens the first player hand', async ({ page }) => {
   await expect(page.getByText("p1's turn:")).toBeVisible();
 });
 
+test('keeps player layout stable after choosing a card', async ({ page }) => {
+  await page
+    .locator('.seat-control')
+    .filter({ hasText: 'p2' })
+    .locator('select')
+    .selectOption('human');
+  await page.getByRole('button', { name: 'START' }).click();
+
+  const before = await page.locator('[data-players]').boundingBox();
+  await page.getByRole('button', { name: 'p1' }).click();
+  await page.locator('.overlay button.card').first().click();
+  const after = await page.locator('[data-players]').boundingBox();
+
+  if (!before || !after) throw new Error('Missing player layout bounds');
+  expect(after.height).toBeLessThanOrEqual(before.height + 1);
+});
+
 test('lets a bot-controlled seat auto-play after the human turn', async ({ page }) => {
   await page.getByRole('button', { name: 'START' }).click();
   await page.getByRole('button', { name: 'p1' }).click();
