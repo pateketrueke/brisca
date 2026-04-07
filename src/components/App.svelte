@@ -516,24 +516,8 @@
       {#each game.players as name (name)}
         <li class="player">
           <div class="card-info">
-            <span class="icons space v-flex">
-                {#if name === game.winner}
-                <SvgIcon name="star" fill="gold" />
-                {/if}
-                <!--
-                <svg width="16" height="16">
-                <use xlink:href="#icon-gear" />
-                </svg>
-                <svg width="16" height="16">
-                <use xlink:href="#icon-warn" />
-                </svg>
-                <svg width="16" height="16">
-                <use xlink:href="#icon-nobell" />
-                </svg>
-                -->
-            </span>
             <button
-                class="action flex center"
+                class="action flex center space"
                 tabindex="-1"
                 disabled={game.turn !== name || game[name].played}
                 title="{game[name].stack.length} cards"
@@ -541,9 +525,25 @@
             >
                 <SvgIcon name="at" size="12" />
                 {name}
-                {#if isBot(name)}
-                  <small>BOT</small>
-                {/if}
+                <span class="icons flex">
+                    {#if name === game.winner}
+                    <SvgIcon name="star" fill="gold" />
+                    {/if}
+                    <!--
+                    <svg width="16" height="16">
+                    <use xlink:href="#icon-gear" />
+                    </svg>
+                    <svg width="16" height="16">
+                    <use xlink:href="#icon-warn" />
+                    </svg>
+                    <svg width="16" height="16">
+                    <use xlink:href="#icon-nobell" />
+                    </svg>
+                    -->
+                    {#if isBot(name)}
+                        <SvgIcon name="robot"/>
+                    {/if}
+                </span>
             </button>
             {#each game[name].set as card (`${card.kind}:${card.number}`)}
                 <Card value={card} />

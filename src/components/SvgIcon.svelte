@@ -1,5 +1,6 @@
 <script>
   import IconAt from '$lib/sprites/at.svg';
+  import IconRobot from '$lib/sprites/robot.svg';
   import IconEnter from '$lib/sprites/enter.svg';
   import IconGear from '$lib/sprites/gear.svg';
   import IconNobell from '$lib/sprites/nobell.svg';
@@ -18,6 +19,7 @@
     repeat: IconRepeat,
     star: IconStar,
     warn: IconWarn,
+    robot: IconRobot,
   };
 
   let {
