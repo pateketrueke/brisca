@@ -55,6 +55,7 @@
    */
   let customDialog = null;
   let botTimeout;
+  let botCheckTimeout;
 
   /**
    * @type {(callback: function) => void}
@@ -115,6 +116,10 @@
 
   function isBot(name) {
     return (game.bots || []).includes(name);
+  }
+
+  function hasBots() {
+    return game.players?.some((name) => isBot(name));
   }
 
   function toggleBot(name) {
@@ -384,6 +389,17 @@
     botTimeout = setTimeout(playBotTurn, 350);
   }
 
+  $: if (
+    game.status === 'started' &&
+    allPlayed &&
+    hasBots() &&
+    !player &&
+    !customDialog
+  ) {
+    clearTimeout(botCheckTimeout);
+    botCheckTimeout = setTimeout(checkPlay, 500);
+  }
+
   onMount(() => {
     function handleKeys(e) {
       if (player) {
@@ -441,6 +457,7 @@
       removeEventListener('keydown', handleKeys);
       removeEventListener('keyup', handleDialogs);
       clearTimeout(botTimeout);
+      clearTimeout(botCheckTimeout);
     };
   });
 </script>

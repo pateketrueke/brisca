@@ -36,5 +36,5 @@ test('lets a bot-controlled seat auto-play after the human turn', async ({ page 
   await page.getByRole('button', { name: 'p1' }).click();
   await page.locator('.overlay button.card').first().click();
 
-  await expect(page.getByRole('button', { name: 'OK' })).toBeEnabled();
+  await expect(page.getByText(/won this hand!/)).toBeVisible();
 });
