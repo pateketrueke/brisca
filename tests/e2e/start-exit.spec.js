@@ -9,6 +9,8 @@ test.beforeEach(async ({ page }) => {
 test('starts and exits a game', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /Brisca/ })).toBeVisible();
   await expect(page.getByText('Players:')).toBeVisible();
+  await expect(page.getByText('Empty 0/0')).toBeVisible();
+  await expect(page.getByLabel('Gameplay timeline')).toBeDisabled();
 
   await page.getByRole('button', { name: 'START' }).click();
 

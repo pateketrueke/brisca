@@ -65,6 +65,9 @@
     { length: Number(viewGame.length || 2) },
     (_, i) => `p${i + 1}`
   );
+  $: timelineLength = game.history?.length || 0;
+  $: timelineCursor = timelineLength ? game.cursor : 0;
+  $: canScrubTimeline = timelineLength > 1;
 
   /**
    * @type {any}
@@ -668,23 +671,26 @@
   </small>
 {/if}
 
-{#if viewGame.status !== 'pending' && game.history?.length > 1}
-  <div class="timeline">
-    <label class="flex space center">
-      <small class:dimmed={!isReplaying}>
-        {isReplaying ? 'Replay' : 'Live'} {game.cursor + 1}/{game.history.length}
-      </small>
-      <input
-        aria-label="Gameplay timeline"
-        type="range"
-        min="0"
-        max={game.history.length - 1}
-        value={game.cursor}
-        on:input={(event) => setHistoryCursor(event.currentTarget.value)}
-      />
-    </label>
-  </div>
-{/if}
+<div class="timeline">
+  <label class="flex space center">
+    <small class:dimmed={!isReplaying}>
+      {#if timelineLength}
+        {isReplaying ? 'Replay' : 'Live'} {timelineCursor + 1}/{timelineLength}
+      {:else}
+        Empty 0/0
+      {/if}
+    </small>
+    <input
+      aria-label="Gameplay timeline"
+      type="range"
+      min="0"
+      max={Math.max(timelineLength - 1, 0)}
+      value={timelineCursor}
+      disabled={!canScrubTimeline}
+      on:input={(event) => setHistoryCursor(event.currentTarget.value)}
+    />
+  </label>
+</div>
 
 <Dialog hidden={!cards.length}>
   <div>
