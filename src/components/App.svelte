@@ -10,6 +10,7 @@
     rotateAt,
     takeNth,
     chooseBotCard,
+    getCardPoints,
     getBriscaDeck,
     isInvalidBrisca,
   } from '../lib/shared/helpers';
@@ -37,10 +38,63 @@
   }
 
   /**
+   * @param {any} card
+   */
+  function cardRef(card) {
+    return card ? `${card.kind[0]}${card.number}` : null;
+  }
+
+  /**
+   * @param {any[]} cards
+   */
+  function cardRefs(cards = []) {
+    return cards.map(cardRef);
+  }
+
+  /**
+   * @param {any} state
+   * @param {string} name
+   */
+  function getTimelinePlayerPayload(state, name) {
+    const user = state[name];
+    /**
+     * @type {any[]}
+     */
+    const stack = user.stack;
+    return {
+      name,
+      bot: (state.bots || []).includes(name),
+      hand: user.hand.length,
+      set: cardRefs(user.set),
+      stack: stack.length,
+      score: stack.reduce((total, card) => total + getCardPoints(card), 0),
+    };
+  }
+
+  /**
    * @param {any} state
    */
   function getTimelinePayload(state) {
-    return state ? JSON.stringify(state) : '';
+    if (!state) return null;
+    /**
+     * @type {string[]}
+     */
+    const players = state.players || [];
+    return {
+      status: state.status,
+      turn: state.turn,
+      winner: state.winner,
+      deck: state.deck?.length || 0,
+      triumph: cardRef(state.triumph),
+      players: players.map((name) => getTimelinePlayerPayload(state, name)),
+    };
+  }
+
+  /**
+   * @param {any} state
+   */
+  function getTimelineKey(state) {
+    return JSON.stringify(getTimelinePayload(state));
   }
 
   let game = { ...EMPTY_GAME };
@@ -75,7 +129,8 @@
   $: timelineLength = game.history?.length || 0;
   $: timelineCursor = timelineLength ? game.cursor : 0;
   $: canScrubTimeline = timelineLength > 1;
-  $: timelinePayload = timelineLength ? JSON.stringify(viewGame, null, 2) : '';
+  $: timelinePayload = timelineLength ? getTimelinePayload(viewGame) : null;
+  $: timelinePayloadText = timelinePayload ? JSON.stringify(timelinePayload, null, 2) : '';
 
   /**
    * @type {any}
@@ -158,8 +213,7 @@
       const history =
         next.history?.slice(0, (next.cursor ?? next.history.length - 1) + 1) || [];
       const isDuplicate =
-        getTimelinePayload(history[history.length - 1]) ===
-        getTimelinePayload(snapshot);
+        getTimelineKey(history[history.length - 1]) === getTimelineKey(snapshot);
       const timeline = isDuplicate ? history : history.concat(snapshot);
       next = {
         ...next,
@@ -731,8 +785,8 @@
     />
     <small>Payload</small>
   </label>
-  {#if showTimelineDebug && timelinePayload}
-    <pre class="timeline-debug" aria-label="Timeline payload">{timelinePayload}</pre>
+  {#if showTimelineDebug && timelinePayloadText}
+    <pre class="timeline-debug" aria-label="Timeline payload">{timelinePayloadText}</pre>
   {/if}
 </div>
 

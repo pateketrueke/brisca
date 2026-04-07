@@ -92,6 +92,9 @@ test('inspects the selected timeline payload', async ({ page }) => {
   await expect(payload).toBeVisible();
   await expect(payload).toContainText('"status": "started"');
   await expect(payload).toContainText('"turn": "p1"');
+  await expect(payload).toContainText('"triumph"');
+  await expect(payload).toContainText('"score"');
+  await expect(payload).not.toContainText('"ordered"');
 });
 
 test('auto-commits the hand and continue dialog when Auto OK is enabled', async ({ page }) => {
