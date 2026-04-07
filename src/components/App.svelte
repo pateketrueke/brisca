@@ -36,6 +36,13 @@
     return rest;
   }
 
+  /**
+   * @param {any} state
+   */
+  function getTimelinePayload(state) {
+    return state ? JSON.stringify(state) : '';
+  }
+
   let game = { ...EMPTY_GAME };
   try {
     if (localStorage.$game) {
@@ -68,6 +75,7 @@
   $: timelineLength = game.history?.length || 0;
   $: timelineCursor = timelineLength ? game.cursor : 0;
   $: canScrubTimeline = timelineLength > 1;
+  $: timelinePayload = timelineLength ? JSON.stringify(viewGame, null, 2) : '';
 
   /**
    * @type {any}
@@ -83,6 +91,7 @@
   let autoDialogTimeout;
   let autoDrawTimeout;
   let autoCheck = false;
+  let showTimelineDebug = false;
   try {
     autoCheck = localStorage.$autoCheck === 'true';
   } catch {
@@ -146,11 +155,16 @@
     let next = state;
     if (next.status === 'started' || next.status === 'finished') {
       const snapshot = clone(withoutHistory(next));
-      const history = next.history?.slice(0, (next.cursor ?? next.history.length - 1) + 1) || [];
+      const history =
+        next.history?.slice(0, (next.cursor ?? next.history.length - 1) + 1) || [];
+      const isDuplicate =
+        getTimelinePayload(history[history.length - 1]) ===
+        getTimelinePayload(snapshot);
+      const timeline = isDuplicate ? history : history.concat(snapshot);
       next = {
         ...next,
-        history: history.concat(snapshot),
-        cursor: history.length,
+        history: timeline,
+        cursor: timeline.length - 1,
       };
     }
 
@@ -708,6 +722,18 @@
       on:input={(event) => setHistoryCursor(event.currentTarget.value)}
     />
   </label>
+  <label class="timeline-debug-toggle flex center space">
+    <input
+      aria-label="Inspect timeline payload"
+      type="checkbox"
+      bind:checked={showTimelineDebug}
+      disabled={!timelineLength}
+    />
+    <small>Payload</small>
+  </label>
+  {#if showTimelineDebug && timelinePayload}
+    <pre class="timeline-debug" aria-label="Timeline payload">{timelinePayload}</pre>
+  {/if}
 </div>
 
 <Dialog hidden={!cards.length}>

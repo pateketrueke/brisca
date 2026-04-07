@@ -82,6 +82,18 @@ test('time-travels gameplay history in read-only replay mode', async ({ page }) 
   await expect(page.getByRole('button', { name: 'Exit game' })).toBeDisabled();
 });
 
+test('inspects the selected timeline payload', async ({ page }) => {
+  await page.getByRole('button', { name: 'START' }).click();
+
+  await expect(page.getByLabel('Inspect timeline payload')).toBeEnabled();
+  await page.getByLabel('Inspect timeline payload').check();
+
+  const payload = page.getByLabel('Timeline payload', { exact: true });
+  await expect(payload).toBeVisible();
+  await expect(payload).toContainText('"status": "started"');
+  await expect(payload).toContainText('"turn": "p1"');
+});
+
 test('auto-commits the hand and continue dialog when Auto OK is enabled', async ({ page }) => {
   await page
     .locator('.seat-control')

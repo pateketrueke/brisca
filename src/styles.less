@@ -404,9 +404,11 @@ body {
 .timeline {
   inset: auto 0 0;
   z-index: 2;
+  gap: 8px;
   padding: 12px clamp(16px, 4vw, 40px);
   position: sticky;
   margin-top: auto;
+  display: grid;
   background-color: rgba(255, 255, 255, .9);
 
   label {
@@ -416,6 +418,26 @@ body {
   input {
     flex: 1;
   }
+}
+
+.timeline-debug-toggle {
+  justify-content: flex-end;
+
+  input {
+    flex: none;
+  }
+}
+
+.timeline-debug {
+  max-height: 35vh;
+  overflow: auto;
+  margin: 0;
+  padding: 12px;
+  font-size: 11px;
+  color: #24313d;
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, .95);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12);
 }
 
 [data-cardset*="OROS"] { border-color: #F1CC28; color: #F1CC28; }
