@@ -276,7 +276,7 @@ body {
   padding: 0;
 }
 .overlay {
-  background-color: rgba(0, 0, 0, .05);
+  background-color: transparent;
   position: absolute;
   z-index: 3;
   content: '';
@@ -296,6 +296,7 @@ body {
     max-width: 420px;
     border-radius: 5px;
     background-color: #fff;
+    pointer-events: auto;
     transition: transform .2s;
     transform: translateY(50vh);
     box-shadow: 0 1px 3px rgba(0, 0, 0, .5);
@@ -308,7 +309,7 @@ body {
 
   &.shown {
     opacity: 1;
-    pointer-events: all;
+    pointer-events: none;
     > * { transform: translateX(0); }
   }
 }

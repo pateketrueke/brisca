@@ -33,6 +33,16 @@ test('opens the first player hand', async ({ page }) => {
   await expect(page.getByText("p1's turn:")).toBeVisible();
 });
 
+test('keeps persistent controls reachable while a card dialog is open', async ({ page }) => {
+  await page.getByRole('button', { name: 'START' }).click();
+  await page.getByRole('button', { name: 'p1' }).click();
+  await expect(page.getByText("p1's turn:")).toBeVisible();
+
+  await page.getByRole('button', { name: 'Exit game' }).click();
+
+  await expect(page.getByText('Do you want to end this game?')).toBeVisible();
+});
+
 test('keeps player layout stable after choosing a card', async ({ page }) => {
   await page
     .locator('.seat-control')
