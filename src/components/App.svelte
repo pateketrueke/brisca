@@ -81,6 +81,7 @@
   let botTimeout;
   let botCheckTimeout;
   let autoDialogTimeout;
+  let autoDrawTimeout;
   let autoCheck = false;
   try {
     autoCheck = localStorage.$autoCheck === 'true';
@@ -456,6 +457,20 @@
 
   $: if (
     game.status === 'started' &&
+    autoCheck &&
+    pendingPlay &&
+    !isBot(game.turn) &&
+    !game[game.turn]?.played &&
+    !player &&
+    !customDialog &&
+    !isReplaying
+  ) {
+    clearTimeout(autoDrawTimeout);
+    autoDrawTimeout = setTimeout(drawCards, 350);
+  }
+
+  $: if (
+    game.status === 'started' &&
     allPlayed &&
     (autoCheck || hasBots()) &&
     !player &&
@@ -472,6 +487,7 @@
     selected = -1;
     clearTimeout(botTimeout);
     clearTimeout(botCheckTimeout);
+    clearTimeout(autoDrawTimeout);
     game = { ...game, cursor: Number(value) };
   }
 
@@ -534,6 +550,7 @@
       clearTimeout(botTimeout);
       clearTimeout(botCheckTimeout);
       clearTimeout(autoDialogTimeout);
+      clearTimeout(autoDrawTimeout);
     };
   });
 </script>
