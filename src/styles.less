@@ -12,18 +12,24 @@ svg {
 }
 
 body {
-  overflow: hidden;
+  min-height: 100vh;
   font-family: Arial;
+  margin: 0;
 }
 
 #app {
   user-select: none;
   cursor: default;
   margin: auto;
-  padding: 10px;
+  width: 100%;
+  min-height: 100dvh;
+  padding: clamp(16px, 4vw, 40px);
+  display: flex;
+  flex-direction: column;
 
   header {
-    margin-bottom: 30px;
+    gap: 16px;
+    margin-bottom: clamp(20px, 4vh, 40px);
 
     h1 {
       position: relative;
@@ -48,25 +54,53 @@ body {
 
 .pot {
   min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.full {
-  height: 100%;
+.game-board {
+  display: grid;
+  flex: 1;
+  gap: clamp(24px, 6vw, 64px);
+  grid-template-columns: minmax(120px, auto);
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  justify-items: center;
+  width: 100%;
+  min-height: 0;
+}
+
+.board-action {
+  display: flex;
+  justify-content: center;
+}
+
+[data-players] {
+  gap: clamp(18px, 4vw, 32px);
+  align-items: center;
+  width: min(100%, 520px);
 }
 
 .player {
+  flex: 1 1 180px;
   min-width: 180px;
-  min-height: 150px;
+  min-height: 130px;
+  padding: 16px 12px 16px 26px;
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
   .action {
-    transform: translateY(70px);
+    transform: translateY(44px);
   }
 
   .icons {
     position: absolute;
-    left: -22px;
-    top: 81px;
+    top: -32px;
+    left: 0;
 
     svg {
       fill: silver;
@@ -79,20 +113,48 @@ body {
   }
 }
 
-@media screen and (min-width: 720px) {
-  [data-players] {
-    transform: translateY(-60px);
+@media screen and (min-width: 480px) {
+  .game-board {
+    grid-template-columns: minmax(120px, auto) minmax(260px, 1fr);
   }
+
+  .board-action {
+    grid-column: 2;
+  }
+
+  [data-players] {
+    width: min(100%, 640px);
+  }
+}
+
+@media screen and (min-width: 720px) {
+  .game-board {
+    grid-template-columns: minmax(160px, auto) minmax(300px, 1fr) minmax(90px, auto);
+  }
+
+  .board-action {
+    grid-column: 3;
+  }
+
   .pot {
     min-width: 180px;
   }
+
+  [data-players] {
+    max-width: 640px;
+  }
+
   .player {
-    min-width: 220px;
+    flex-basis: 220px;
   }
 }
 @media screen and (min-width: 960px) {
+  [data-players] {
+    max-width: 760px;
+  }
+
   .player {
-    min-width: 320px;
+    flex-basis: 320px;
   }
 }
 
@@ -278,10 +340,17 @@ body {
     5px 5px 0 #000;
 }
 .action + .card {
-  transform: translate3d(33%, -33%, 0) rotate(10deg);
+  transform: translate3d(33%, -66%, 0) rotate(10deg);
 }
 .deck + .card {
-  transform: translate3d(100%, 65%, 0) rotate(190deg);
+  transform: translate3d(33%, 77%, 0) rotate(190deg);
+}
+
+.card-info {
+    position: relative;
+}
+.brisca-app {
+  margin: 1rem;
 }
 
 [data-cardset*="OROS"] { border-color: #F1CC28; color: #F1CC28; }

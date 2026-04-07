@@ -26,7 +26,7 @@
       game = JSON.parse(localStorage.$game);
       game.status = game.status !== 'finished' ? game.status : 'pending';
     }
-  } catch (e) {
+  } catch {
     // ignore
   }
 
@@ -75,22 +75,29 @@
       customDialog = { props };
     } else {
       new Promise((resolve, reject) => {
-        customDialog = {
+        const dialog = {
           props,
-          reject: reject,
-          resolve: resolve,
+          resolved: false,
+          resolve: () => {
+            dialog.resolved = true;
+            resolve(undefined);
+          },
+          reject,
         };
+        customDialog = dialog;
       }).finally(() => {
         closeDialog(callback);
       });
     }
+
+    return customDialog;
   }
 
   function syncGame(state) {
     game = state;
     try {
       localStorage.setItem('$game', JSON.stringify(game));
-    } catch (e) {
+    } catch {
       // ignore
     }
   }
@@ -395,8 +402,8 @@
   </span>
 </header>
 
-<div class="full flex apart">
-  <span class="pot">
+<div class="game-board">
+  <span class="pot" data-board-pot>
     <Card type="deck" number={game.deck.length}>
       {#if game.triumph}<Card value={game.triumph} />{/if}
     </Card>
@@ -406,41 +413,43 @@
     <ul data-players class="flex wrapped justify inline reset">
       {#each game.players as name (name)}
         <li class="player">
-          <span class="icons space v-flex">
-            {#if name === game.winner}
-              <SvgIcon name="star" fill="gold" />
-            {/if}
-            <!--
-            <svg width="16" height="16">
-              <use xlink:href="#icon-gear" />
-            </svg>
-            <svg width="16" height="16">
-              <use xlink:href="#icon-warn" />
-            </svg>
-            <svg width="16" height="16">
-              <use xlink:href="#icon-nobell" />
-            </svg>
-            -->
-          </span>
-          <button
-            class="action flex center"
-            tabindex="-1"
-            disabled={game.turn !== name || game[name].played}
-            title="{game[name].stack.length} cards"
-            on:click={drawCards}
-          >
-            <SvgIcon name="at" size="12" />
-            {name}
-          </button>
-          {#each game[name].set as card (card.number)}
-            <Card value={card} />
-          {/each}
+          <div class="card-info">
+            <span class="icons space v-flex">
+                {#if name === game.winner}
+                <SvgIcon name="star" fill="gold" />
+                {/if}
+                <!--
+                <svg width="16" height="16">
+                <use xlink:href="#icon-gear" />
+                </svg>
+                <svg width="16" height="16">
+                <use xlink:href="#icon-warn" />
+                </svg>
+                <svg width="16" height="16">
+                <use xlink:href="#icon-nobell" />
+                </svg>
+                -->
+            </span>
+            <button
+                class="action flex center"
+                tabindex="-1"
+                disabled={game.turn !== name || game[name].played}
+                title="{game[name].stack.length} cards"
+                on:click={drawCards}
+            >
+                <SvgIcon name="at" size="12" />
+                {name}
+            </button>
+            {#each game[name].set as card (`${card.kind}:${card.number}`)}
+                <Card value={card} />
+            {/each}
+          </div>
         </li>
       {/each}
     </ul>
   {/if}
 
-  <span>
+  <span class="board-action">
     {#if game.status === 'pending'}
       <button class="action flex space" on:click={startGame} tabindex="-1">
         <SvgIcon name="enter" />
@@ -477,7 +486,7 @@
         {player}'s turn:
       </h3>
       <span class="flex space justify">
-        {#each cards as card, o (card.number)}
+        {#each cards as card, o (`${card.kind}:${card.number}`)}
           <Card
             onClick={() => chooseIt(card)}
             disabled={isInvalid(card)}
