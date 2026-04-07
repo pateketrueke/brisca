@@ -30,6 +30,15 @@ body {
   header {
     gap: 16px;
     margin-bottom: clamp(20px, 4vh, 40px);
+    flex-wrap: wrap;
+
+    > span {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+    }
 
     h1 {
       position: relative;
@@ -49,6 +58,24 @@ body {
 
   @media screen and (min-width: 1080px) {
     max-width: 1080px;
+  }
+}
+
+.seat-controls {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.seat-control {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+
+  .action {
+    padding: 6px;
+    font-size: 12px;
   }
 }
 

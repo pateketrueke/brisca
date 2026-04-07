@@ -1,7 +1,12 @@
 /* eslint-disable no-unused-expressions */
 
 import { test } from '@japa/runner';
-import { isInvalidBrisca } from './helpers.js';
+import {
+  chooseBotCard,
+  getBotStance,
+  getLegalCards,
+  isInvalidBrisca,
+} from './helpers.js';
 
 test.group('Brisca rules', () => {
   const triumph = { kind: 'BASTOS' };
@@ -47,5 +52,103 @@ test.group('Brisca rules', () => {
 
     expect(isInvalidBrisca(set, set[0], card, triumph)).toBeTruthy();
     expect(isInvalidBrisca(set, set[1], card, triumph)).toBeFalsy();
+  });
+});
+
+test.group('Brisca bot', () => {
+  const triumph = { kind: 'BASTOS', number: 4 };
+
+  function createGame(overrides = {}) {
+    return {
+      deck: [{ kind: 'OROS', number: 2 }],
+      length: '2',
+      ordered: ['p1', 'p2'],
+      players: ['p1', 'p2'],
+      triumph,
+      turn: 'p2',
+      winner: 'p1',
+      p1: {
+        hand: [],
+        set: [{ kind: 'COPAS', number: 10 }],
+        stack: [],
+      },
+      p2: {
+        hand: [
+          { kind: 'COPAS', number: 11 },
+          { kind: 'BASTOS', number: 1 },
+          { kind: 'OROS', number: 4 },
+        ],
+        set: [],
+        stack: [],
+      },
+      ...overrides,
+    };
+  }
+
+  test('chooses the lowest same-suit winner instead of spending trump', ({ expect }) => {
+    const game = createGame({
+      deck: [],
+      p2: {
+        hand: [
+          { kind: 'COPAS', number: 11 },
+          { kind: 'COPAS', number: 1 },
+          { kind: 'BASTOS', number: 1 },
+        ],
+        set: [],
+        stack: [{ kind: 'OROS', number: 1 }],
+      },
+    });
+
+    expect(chooseBotCard(game, 'p2')).toEqual({ kind: 'COPAS', number: 11 });
+  });
+
+  test('discards low non-trump cards when it cannot win', ({ expect }) => {
+    const game = createGame({
+      p1: {
+        hand: [],
+        set: [{ kind: 'COPAS', number: 4 }],
+        stack: [],
+      },
+      p2: {
+        hand: [
+          { kind: 'OROS', number: 4 },
+          { kind: 'OROS', number: 5 },
+          { kind: 'ESPADAS', number: 12 },
+        ],
+        set: [],
+        stack: [],
+      },
+    });
+
+    expect(chooseBotCard(game, 'p2')).toEqual({ kind: 'OROS', number: 4 });
+  });
+
+  test('uses last-round legal card rules when the deck is empty', ({ expect }) => {
+    const game = createGame({
+      deck: [],
+      p2: {
+        hand: [
+          { kind: 'OROS', number: 4 },
+          { kind: 'BASTOS', number: 1 },
+          { kind: 'ESPADAS', number: 12 },
+        ],
+        set: [],
+        stack: [],
+      },
+    });
+
+    expect(getLegalCards(game, 'p2')).toEqual([{ kind: 'BASTOS', number: 1 }]);
+  });
+
+  test('switches to aggressive stance when already safely in the game', ({ expect }) => {
+    const game = createGame({
+      p2: {
+        hand: [{ kind: 'OROS', number: 4 }],
+        set: [],
+        stack: [{ kind: 'OROS', number: 1 }],
+      },
+    });
+
+    expect(getBotStance(game, 'p2')).toBe('aggressive');
   });
 });

@@ -9,6 +9,7 @@
     random,
     rotateAt,
     takeNth,
+    chooseBotCard,
     getBriscaDeck,
     isInvalidBrisca,
   } from '../lib/shared/helpers';
@@ -39,6 +40,10 @@
     game.length;
   $: pendingPlay = game.players.some((player) => !game[player].set.length);
   $: allPlayed = game.players.every((player) => game[player].set.length > 0);
+  $: pendingPlayers = Array.from(
+    { length: Number(game.length || 2) },
+    (_, i) => `p${i + 1}`
+  );
 
   /**
    * @type {any}
@@ -49,6 +54,7 @@
    * @type {any}
    */
   let customDialog = null;
+  let botTimeout;
 
   /**
    * @type {(callback: function) => void}
@@ -102,6 +108,29 @@
     }
   }
 
+  function normalizeBots(length = game.length, bots = game.bots || []) {
+    const names = Array.from({ length: Number(length) }, (_, i) => `p${i + 1}`);
+    return bots.filter((name) => name !== 'p1' && names.includes(name));
+  }
+
+  function isBot(name) {
+    return (game.bots || []).includes(name);
+  }
+
+  function toggleBot(name) {
+    const bots = normalizeBots();
+    game = {
+      ...game,
+      bots: bots.includes(name)
+        ? bots.filter((bot) => bot !== name)
+        : bots.concat(name).sort(),
+    };
+  }
+
+  function updateLength() {
+    game = { ...game, bots: normalizeBots() };
+  }
+
   function startGame() {
     const cardset = random(getBriscaDeck());
 
@@ -109,11 +138,12 @@
       takeNth(cardset, 1, (card) => card.number === 2);
     }
 
-    const names = Array.from({ length: game.length }).map(
+    const names = Array.from({ length: Number(game.length) }).map(
       (_, i) => `p${i + 1}`
     );
     const sorted = rotateAt(names, 'p1');
     const limited = cardset.length;
+    const bots = normalizeBots(game.length);
 
     const users = sorted.reduce(
       (memo, cur) =>
@@ -133,6 +163,7 @@
       triumph,
       turn: 'p1',
       deck: cardset,
+      bots,
       total: limited,
       players: names,
       ordered: sorted,
@@ -281,29 +312,38 @@
   let cards = [];
   let selected = -1;
   function drawCards() {
+    if (isBot(game.turn)) return;
     player = game.turn;
     cards = game[player].hand;
   }
 
-  function chooseIt(card) {
-    const offset = game.players.findIndex((x) => player === x);
+  function playCard(name, card) {
+    const offset = game.players.findIndex((x) => name === x);
     const next = (offset + 1) % game.players.length;
-    const idx = cards.findIndex((x) => x === card);
-    const set = cards.splice(idx, 1);
+    const hand = game[name].hand.slice();
+    const idx = hand.findIndex((x) => x === card);
+    const set = hand.splice(idx, 1);
 
     syncGame({
       ...game,
       turn: game.players[next],
-      [player]: {
-        ...game[player],
+      [name]: {
+        ...game[name],
+        hand,
         played: true,
         set,
       },
     });
 
-    cards = [];
-    selected = -1;
-    player = undefined;
+    if (player === name) {
+      cards = [];
+      selected = -1;
+      player = undefined;
+    }
+  }
+
+  function chooseIt(card) {
+    playCard(player, card);
   }
 
   function isInvalid(card) {
@@ -315,6 +355,33 @@
         game.triumph
       );
     }
+  }
+
+  function playBotTurn() {
+    if (
+      customDialog ||
+      player ||
+      game.status !== 'started' ||
+      allPlayed ||
+      !isBot(game.turn) ||
+      game[game.turn]?.played
+    ) {
+      return;
+    }
+
+    const card = chooseBotCard(game, game.turn);
+    if (card) playCard(game.turn, card);
+  }
+
+  $: if (
+    game.status === 'started' &&
+    pendingPlay &&
+    isBot(game.turn) &&
+    !player &&
+    !customDialog
+  ) {
+    clearTimeout(botTimeout);
+    botTimeout = setTimeout(playBotTurn, 350);
   }
 
   onMount(() => {
@@ -373,6 +440,7 @@
     return () => {
       removeEventListener('keydown', handleKeys);
       removeEventListener('keyup', handleDialogs);
+      clearTimeout(botTimeout);
     };
   });
 </script>
@@ -393,11 +461,28 @@
         class="action"
         bind:value={game.length}
         disabled={game.status !== 'pending'}
+        on:change={updateLength}
       >
         <option>2</option>
         <option>3</option>
         <option>4</option>
       </select>
+      <span class="seat-controls">
+        {#each pendingPlayers as name (name)}
+          <label class="seat-control" class:dimmed={name === 'p1'}>
+            <span>{name}</span>
+            <select
+              class="action"
+              disabled={name === 'p1'}
+              value={isBot(name) ? 'bot' : 'human'}
+              on:change={() => toggleBot(name)}
+            >
+              <option value="human">Human</option>
+              <option value="bot">Bot</option>
+            </select>
+          </label>
+        {/each}
+      </span>
     {/if}
   </span>
 </header>
@@ -439,6 +524,9 @@
             >
                 <SvgIcon name="at" size="12" />
                 {name}
+                {#if isBot(name)}
+                  <small>BOT</small>
+                {/if}
             </button>
             {#each game[name].set as card (`${card.kind}:${card.number}`)}
                 <Card value={card} />

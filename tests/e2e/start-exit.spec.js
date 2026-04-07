@@ -30,3 +30,11 @@ test('opens the first player hand', async ({ page }) => {
 
   await expect(page.getByText("p1's turn:")).toBeVisible();
 });
+
+test('lets a bot-controlled seat auto-play after the human turn', async ({ page }) => {
+  await page.getByRole('button', { name: 'START' }).click();
+  await page.getByRole('button', { name: 'p1' }).click();
+  await page.locator('.overlay button.card').first().click();
+
+  await expect(page.getByRole('button', { name: 'OK' })).toBeEnabled();
+});
