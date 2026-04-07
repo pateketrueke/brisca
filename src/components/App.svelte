@@ -120,8 +120,9 @@
       customDialog = { props };
     } else {
       new Promise((resolve, reject) => {
+        const autoAccept = shouldAutoAcceptDialog(props);
         const dialog = {
-          props,
+          props: autoAccept ? { ...props, disabled: true } : props,
           resolved: false,
           resolve: () => {
             dialog.resolved = true;
@@ -130,7 +131,7 @@
           reject,
         };
         customDialog = dialog;
-        if (shouldAutoAcceptDialog(props)) {
+        if (autoAccept) {
           autoDialogTimeout = setTimeout(dialog.resolve, 1000);
         }
       }).finally(() => {
@@ -612,7 +613,7 @@
             <button
                 class="action flex center space"
                 tabindex="-1"
-                disabled={isReplaying || viewGame.turn !== name || viewGame[name].played}
+                disabled={isReplaying || viewGame.turn !== name || viewGame[name].played || (autoCheck && !isBot(name))}
                 title="{viewGame[name].stack.length} cards"
                 on:click={drawCards}
             >
@@ -661,7 +662,7 @@
           class="action flex space"
           on:click={checkPlay}
           tabindex="-1"
-          disabled={isReplaying || !viewGame.players.every((x) => viewGame[x].played)}
+          disabled={isReplaying || autoCheck || !viewGame.players.every((x) => viewGame[x].played)}
         >
           <SvgIcon name="enter" />
           OK

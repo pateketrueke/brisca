@@ -25,7 +25,12 @@
       {#if attributes.description}<p>{@html attributes.description}</p>{/if}
       {#if !attributes.timeout}
         <div class="flex justify">
-          <button class="action flex space" onclick={onAction} tabindex="-1">
+          <button
+            class="action flex space"
+            disabled={attributes.disabled}
+            onclick={onAction}
+            tabindex="-1"
+          >
             <SvgIcon name="enter" />
             {attributes.action || 'OK'}
           </button>

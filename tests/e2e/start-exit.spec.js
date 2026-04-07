@@ -63,6 +63,8 @@ test('auto-commits the hand and continue dialog when Auto OK is enabled', async 
     .selectOption('human');
   await page.getByRole('button', { name: 'START' }).click();
   await page.getByLabel('Auto OK').check();
+  await expect(page.getByRole('button', { name: 'OK' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'p1' })).toBeDisabled();
 
   await expect(page.getByText("p1's turn:")).toBeVisible();
   await page.locator('.overlay button.card').first().click();
@@ -70,5 +72,6 @@ test('auto-commits the hand and continue dialog when Auto OK is enabled', async 
   await page.locator('.overlay button.card').first().click();
 
   await expect(page.getByText(/won this hand!/)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'CONTINUE' })).toBeDisabled();
   await expect(page.getByText(/won this hand!/)).not.toBeVisible({ timeout: 3000 });
 });
