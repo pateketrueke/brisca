@@ -46,11 +46,11 @@
         {attributes.confirm}
       </h3>
       {#if attributes.description}<p>{@html attributes.description}</p>{/if}
-      <div class="flex space center justify actions">
+      <div class="flex center justify actions">
         <button class="link" onclick={onCancel} tabindex="-1"
           >{attributes.cancel || 'CANCEL'}</button
         >
-        or
+        {attributes.or || 'OR'}
         <button class="action flex space" onclick={onConfirm} tabindex="-1">
           <SvgIcon name="enter" />
           {attributes.continue || 'CONTINUE'}

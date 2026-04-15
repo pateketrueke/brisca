@@ -502,6 +502,7 @@
         confirm: i18n.exitConfirm,
         cancel: i18n.cancel,
         continue: i18n.exit,
+        or: i18n.or,
       },
       () => {
         if (pending.resolved) {
@@ -704,9 +705,11 @@
         disabled={canceling || isReplaying}
         on:click={cancelGame}>{i18n.exit}</button>
     {/if}
+    /
     <button class="link" tabindex="-1" on:click={toggleLang}>
       {lang === 'en' ? 'ES' : 'EN'}
     </button>
+    /
     <button class="link" tabindex="-1" on:click={toggleTheme}>
       {theme === 'dark' ? '☀︎' : '☽'}
     </button>
@@ -805,7 +808,7 @@
 
     <ul data-players>
       {#each viewGame.players as name (name)}
-        <li class="player" class:active={viewGame.turn === name && !viewGame[name].played}>
+        <li class="player flex" class:active={viewGame.turn === name && !viewGame[name].played}>
           <div class="player-header">
             <button
                 class="action"
@@ -844,38 +847,37 @@
         </li>
       {/each}
     </ul>
-
-    <span class="board-action">
-      <span class="commit-controls">
-        <button
-          class="action flex space"
-          on:click={checkPlay}
-          tabindex="-1"
-          disabled={isReplaying || autoCheck || !viewGame.players.every((x) => viewGame[x].played)}
-        >
-          <SvgIcon name="enter" />
-          {i18n.ok}
-        </button>
-        <label class="auto-check flex center space">
-          <input
-            aria-label="Auto OK"
-            type="checkbox"
-            bind:checked={autoCheck}
-            disabled={isReplaying}
-            on:change={updateAutoCheck}
-          />
-          <small>{i18n.autoOk}</small>
-        </label>
-      </span>
-    </span>
   {/if}
 </div>
 
 {#if viewGame.status === 'started' && remainingTurns > 0}
-  <small class="flex space center dimmed">
-    <SvgIcon name="repeat" size="12" />
-    <em>{i18n.turnsLeft(remainingTurns)}</em>
-  </small>
+  <span class="board-action">
+    <small class="flex space center dimmed">
+      <SvgIcon name="repeat" size="12" />
+      <em>{i18n.turnsLeft(remainingTurns)}</em>
+    </small>
+    <span class="commit-controls">
+      <button
+        class="action flex space"
+        on:click={checkPlay}
+        tabindex="-1"
+        disabled={isReplaying || autoCheck || !viewGame.players.every((x) => viewGame[x].played)}
+      >
+        <SvgIcon name="enter" />
+        {i18n.ok}
+      </button>
+      <label class="auto-check flex center space">
+        <input
+          aria-label="Auto OK"
+          type="checkbox"
+          bind:checked={autoCheck}
+          disabled={isReplaying}
+          on:change={updateAutoCheck}
+        />
+        <small>{i18n.autoOk}</small>
+      </label>
+    </span>
+  </span>
 {/if}
 
 {#if isDebugMode}
@@ -885,7 +887,7 @@
       {#if timelineLength}
         {isReplaying ? 'Replay' : 'Live'} {timelineCursor + 1}/{timelineLength}
       {:else}
-        Empty 0/0
+        {i18n.empty} 0/0
       {/if}
     </small>
     <input
