@@ -16,6 +16,10 @@
     getLang,
     setLang,
     t,
+    getTeam,
+    getTeammate,
+    getTeamScore,
+    isTeamGame,
   } from '../lib/shared/helpers';
 
   import SvgIcon from './SvgIcon.svelte';
@@ -186,6 +190,23 @@
 
   let showRules = false;
   let inlinePicker = false;
+  let peekingTeammate = false; // showing teammate's cards in picker
+
+  function canPeekTeammate(playerName) {
+    return isTeamGame(viewGame)
+      && !viewGame.deck.length
+      && viewGame.turn === playerName
+      && !viewGame[playerName].played
+      && !peekingTeammate;
+  }
+
+  function peekTeammate() {
+    peekingTeammate = true;
+  }
+
+  function returnCards() {
+    peekingTeammate = false;
+  }
   let toast = null;
   let toastTimeout;
 
@@ -422,34 +443,42 @@
     );
 
     if (!game.deck.length && remainingTurns === 1) {
-      const scores = sorted
-        .reduce(
-          (memo, player) =>
-            memo.concat({
-              name: player,
-              score: users[player].stack.reduce(
-                (total, card) => total + (BRISCA_VALUES[card.number] || 0),
-                0
-              ),
-            }),
-          []
-        )
-        .sort((a, b) => b.score - a.score);
+      const finishedGame = { ...game, ...users, status: 'finished' };
 
-      syncGame({
-        ...game,
-        ...users,
-        status: 'finished',
-        winner: scores[0].name,
-      });
+      let message, description, winnerName;
+
+      if (isTeamGame(game)) {
+        const t1 = getTeamScore(finishedGame, 1);
+        const t2 = getTeamScore(finishedGame, 2);
+        const winningTeam = t1 >= t2 ? 1 : 2;
+        winnerName = winner.player;
+
+        message = i18n.teamWins(winningTeam);
+        const scores = sorted.map(p => ({
+          name: p,
+          score: users[p].stack.reduce((s, c) => s + (BRISCA_VALUES[c.number] || 0), 0),
+          team: getTeam(p),
+        })).sort((a, b) => b.score - a.score);
+        description = [
+          `${i18n.team(1)}: ${t1} pts — ${i18n.team(2)}: ${t2} pts`,
+          ...scores.map((p, i) => `${BRISCA_PRIZE[i]} ${getDisplayName(p.name)} (${i18n.team(p.team)}) — ${p.score} pts`),
+        ].join('<br />');
+      } else {
+        const scores = sorted
+          .map(player => ({
+            name: player,
+            score: users[player].stack.reduce((total, card) => total + (BRISCA_VALUES[card.number] || 0), 0),
+          }))
+          .sort((a, b) => b.score - a.score);
+        winnerName = scores[0].name;
+        message = i18n.winsGame(getDisplayName(winnerName));
+        description = scores.map((p, i) => `${BRISCA_PRIZE[i]} ${getDisplayName(p.name)} — ${i18n.scored(getDisplayName(p.name), p.score)}`).join('<br />');
+      }
+
+      syncGame({ ...finishedGame, winner: winnerName });
 
       pending = setDialog(
-        {
-          icon: 'at',
-          action: i18n.ok,
-          message: i18n.winsGame(getDisplayName(scores[0].name)),
-          description: scores.map((p, i) => `${BRISCA_PRIZE[i]} ${getDisplayName(p.name)} — ${i18n.scored(getDisplayName(p.name), p.score)}`).join('<br />'),
-        },
+        { icon: 'at', action: i18n.ok, message, description },
         () => {
           pending = undefined;
           syncGame({ ...EMPTY_GAME });
@@ -547,6 +576,7 @@
     if (player === name) {
       cards = [];
       selected = -1;
+      peekingTeammate = false;
       player = undefined;
     }
   }
@@ -826,6 +856,9 @@
             <span class="player-score">
               {viewGame[name].stack.reduce((s, c) => s + (BRISCA_VALUES[c.number] || 0), 0)} pts
             </span>
+            {#if isTeamGame(viewGame)}
+              <span class="team-badge" data-team={getTeam(name)}>{i18n.team(getTeam(name))}</span>
+            {/if}
           </div>
           <div class="player-cards">
             {#each viewGame[name].set as card (`${card.kind}:${card.number}`)}
@@ -850,6 +883,16 @@
     </ul>
   {/if}
 </div>
+
+{#if viewGame.status === 'started' && isTeamGame(viewGame)}
+  <div class="team-scores">
+    {#each [1, 2] as team}
+      <span class="team-score" data-team={team}>
+        {i18n.team(team)}: {getTeamScore(viewGame, team)} pts
+      </span>
+    {/each}
+  </div>
+{/if}
 
 {#if viewGame.status === 'started' && remainingTurns > 0}
   <span class="board-action">
@@ -919,29 +962,42 @@
 <Dialog hidden={!cards.length || inlinePicker}>
   <div>
     {#if cards.length}
-      <h3 class="flex reset center">
-        <SvgIcon name="at" />
-        {getDisplayName(player)} — {i18n.yourTurn}
-      </h3>
-      <div class="card-picker">
-        {#each cards as card, o (`${card.kind}:${card.number}`)}
-          <Card
-            onClick={() => chooseIt(card)}
-            disabled={isInvalid(card)}
-            focused={o === selected}
-            type="button"
-            value={card}
-          />
-        {/each}
-      </div>
-      <label class="auto-check flex center space" style="justify-content: center; margin-top: 12px;">
-        <input
-          type="checkbox"
-          bind:checked={autoCheck}
-          on:change={updateAutoCheck}
-        />
-        <small>{i18n.autoOk}</small>
-      </label>
+      {#if peekingTeammate}
+        <h3 class="flex reset center">
+          {i18n.teamPeek} — {getDisplayName(getTeammate(player))}
+        </h3>
+        <div class="card-picker">
+          {#each viewGame[getTeammate(player)].hand as card (`${card.kind}:${card.number}`)}
+            <Card value={card} />
+          {/each}
+        </div>
+        <button class="action" style="width:100%; justify-content: center; margin-top: 12px;" on:click={returnCards}>
+          {i18n.teamReturn}
+        </button>
+      {:else}
+        <h3 class="flex reset center">
+          <SvgIcon name="at" />
+          {getDisplayName(player)} — {i18n.yourTurn}
+        </h3>
+        {#if canPeekTeammate(player)}
+          <button class="team-peek-btn link" on:click={peekTeammate}>
+            👀 {i18n.teamPeek}
+          </button>
+        {/if}
+        <div class="card-picker">
+          {#each cards as card, o (`${card.kind}:${card.number}`)}
+            <Card
+              onClick={() => chooseIt(card)}
+              disabled={isInvalid(card)}
+              focused={o === selected}
+              type="button"
+              value={card}
+            />
+          {/each}
+        </div>
+          <small>{i18n.autoOk}</small>
+        </label>
+      {/if}
     {:else}
       Loading...
     {/if}

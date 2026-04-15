@@ -39,6 +39,10 @@ export const TRANSLATIONS = {
       lastRound: 'Last round rule: when the deck is empty, you must follow the leading suit if possible, or play trump if you cannot.',
       winning: 'The player with the most points at the end wins. There are 120 points total.',
     },
+    team: n => `Team ${n}`,
+    teamWins: n => `Team ${n} wins!`,
+    teamPeek: 'See teammate\'s cards',
+    teamReturn: 'Return cards',
     defaultNames: { p1: 'You', p2: 'Bot', p3: 'Bot 2', p4: 'Bot 3' },
   },
   es: {
@@ -81,6 +85,10 @@ export const TRANSLATIONS = {
       lastRound: 'Al final, cuando ya no hay mazo, tienes que seguir el palo que salió si puedes, o echar triunfo si no tienes.',
       winning: 'Gana quien tenga más puntos al terminar. En total hay 120 puntos.',
     },
+    team: n => `Equipo ${n}`,
+    teamWins: n => `¡Equipo ${n} gana!`,
+    teamPeek: 'Ver cartas del compañero',
+    teamReturn: 'Regresar cartas',
     defaultNames: { p1: 'Yo', p2: 'Bot', p3: 'Bot 2', p4: 'Bot 3' },
   },
 };
@@ -108,6 +116,29 @@ export const EMPTY_GAME = {
   triumph: null,
   status: 'pending',
 };
+
+// Team helpers (4-player mode only)
+// Seating: p1(12) p2(3) p3(6) p4(9) clockwise — partners sit opposite
+export const TEAMS = { p1: 1, p2: 2, p3: 1, p4: 2 };
+export const TEAMMATES = { p1: 'p3', p2: 'p4', p3: 'p1', p4: 'p2' };
+
+export function getTeam(player) {
+  return TEAMS[player] || null;
+}
+
+export function getTeammate(player) {
+  return TEAMMATES[player] || null;
+}
+
+export function getTeamScore(game, team) {
+  return Object.entries(TEAMS)
+    .filter(([, t]) => t === team)
+    .reduce((s, [p]) => s + (game[p] ? getPlayerScore(game, p) : 0), 0);
+}
+
+export function isTeamGame(game) {
+  return game.length === '4';
+}
 
 export const BRISCA_CARDS = [1, 2, 3, 4, 5, 6, 7, 10, 11, 12];
 export const BRISCA_VALUES = {

@@ -331,6 +331,43 @@ header {
   }
 }
 
+.team-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  letter-spacing: 0.05em;
+
+  &[data-team="1"] { background: #2563eb22; color: #2563eb; }
+  &[data-team="2"] { background: #dc262622; color: #dc2626; }
+}
+
+.team-scores {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding: 6px 0;
+}
+
+.team-score {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+
+  &[data-team="1"] { background: #2563eb22; color: #2563eb; }
+  &[data-team="2"] { background: #dc262622; color: #dc2626; }
+}
+
+.team-peek-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 8px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
 .board-action {
   display: flex;
   gap: 8px;
