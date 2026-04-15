@@ -147,6 +147,7 @@
   let autoDrawTimeout;
   let autoCheck = false;
   let showTimelineDebug = false;
+  const isDebugMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('debug');
   try {
     autoCheck = localStorage.$autoCheck === 'true';
   } catch {
@@ -624,15 +625,15 @@
   });
 </script>
 
-<header class="flex space center apart">
-  <h1 class="reset">Brisca <small>{VERSION}</small></h1>
-  <span>
+<header>
+  <h1>Brisca <small>{VERSION}</small></h1>
+  <span class="header-controls">
     {#if viewGame.status === 'started'}
       <button
         class="link"
         tabindex="-1"
         disabled={canceling || isReplaying}
-        on:click={cancelGame}>Exit game</button
+        on:click={cancelGame}>Exit</button
       >
     {:else}
       <small class="dimmed">Players:</small>
@@ -674,39 +675,30 @@
   </span>
 
   {#if viewGame.status === 'started'}
-    <ul data-players class="flex wrapped justify inline reset">
+    <ul data-players>
       {#each viewGame.players as name (name)}
-        <li class="player">
-          <div class="card-info">
+        <li class="player" class:active={viewGame.turn === name && !viewGame[name].played}>
+          <div class="player-header">
             <button
-                class="action flex center space"
+                class="action"
                 tabindex="-1"
                 disabled={isReplaying || viewGame.turn !== name || viewGame[name].played || (autoCheck && !isBot(name))}
-                title="{viewGame[name].stack.length} cards"
                 on:click={drawCards}
             >
-                <SvgIcon name="at" size="12" />
-                {name}
+                <SvgIcon name="at" size="14" />
+                <span class="player-name">{name}</span>
                 <span class="icons flex">
                     {#if name === viewGame.winner}
                     <SvgIcon name="star" fill="gold" />
                     {/if}
-                    <!--
-                    <svg width="16" height="16">
-                    <use xlink:href="#icon-gear" />
-                    </svg>
-                    <svg width="16" height="16">
-                    <use xlink:href="#icon-warn" />
-                    </svg>
-                    <svg width="16" height="16">
-                    <use xlink:href="#icon-nobell" />
-                    </svg>
-                    -->
                     {#if isBot(name)}
-                        <SvgIcon name="robot"/>
+                    <SvgIcon name="robot"/>
                     {/if}
                 </span>
             </button>
+            <span class="player-score">{viewGame[name].stack.length} cards</span>
+          </div>
+          <div class="player-cards">
             {#each viewGame[name].set as card (`${card.kind}:${card.number}`)}
                 <Card value={card} />
             {/each}
@@ -718,7 +710,7 @@
 
   <span class="board-action">
     {#if viewGame.status === 'pending'}
-      <button class="action flex space" on:click={startGame} tabindex="-1">
+      <button class="action" on:click={startGame} tabindex="-1">
         <SvgIcon name="enter" />
         START
       </button>
@@ -757,6 +749,7 @@
   </small>
 {/if}
 
+{#if isDebugMode}
 <div class="timeline">
   <label class="flex space center">
     <small class:dimmed={!isReplaying}>
@@ -789,6 +782,7 @@
     <pre class="timeline-debug" aria-label="Timeline payload">{timelinePayloadText}</pre>
   {/if}
 </div>
+{/if}
 
 <Dialog hidden={!cards.length}>
   <div>
@@ -797,7 +791,7 @@
         <SvgIcon name="at" />
         {player}'s turn:
       </h3>
-      <span class="flex space justify">
+      <div class="card-picker">
         {#each cards as card, o (`${card.kind}:${card.number}`)}
           <Card
             onClick={() => chooseIt(card)}
@@ -807,7 +801,7 @@
             value={card}
           />
         {/each}
-      </span>
+      </div>
     {:else}
       Loading...
     {/if}
