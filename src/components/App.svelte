@@ -731,8 +731,8 @@
 <div id="app">
 <header>
   <h1 title="{i18n.title}">
-    <a href="/">
-      <span class="logo">{@html BriscaIcon}</span>
+    <a href="/" class="logo">
+      {@html BriscaIcon}
     </a>
     <small>{VERSION}</small>
   </h1>
