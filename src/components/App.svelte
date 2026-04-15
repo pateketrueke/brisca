@@ -212,7 +212,10 @@
   }
 
   let showRules = false;
+  let showAbout = false;
   let inlinePicker = false;
+
+  const REPO_URL = 'https://github.com/pateketrueke/brisca';
   let peekingTeammate = false; // showing teammate's cards in picker
   let peekedLocal = false;    // local flag while syncGame propagates
 
@@ -789,7 +792,7 @@
     </a>
   </h1>
   <span class="header-controls">
-    <small>{VERSION}</small>
+    <button class="link" tabindex="-1" on:click={() => showAbout = true}>{VERSION}</button>
     /
     {#if viewGame.status === 'started'}
       <button
@@ -1107,6 +1110,36 @@
       amount={200}
       fallDistance="100vh"
     />
+  </div>
+{/if}
+
+<!-- GitHub ribbon -->
+<a href={REPO_URL} class="github-ribbon" target="_blank" rel="noopener" aria-label="GitHub">
+  <svg width="60" height="60" viewBox="0 0 250 250" aria-hidden="true">
+    <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z" fill="var(--text)"/>
+    <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="var(--bg)" style="transform-origin:130px 106px"/>
+    <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.8 141.5,141.9 141.8,141.8 Z" fill="var(--bg)"/>
+  </svg>
+</a>
+
+{#if showAbout}
+  <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+  <div class="overlay shown" role="dialog" aria-modal="true" tabindex="-1" on:click|self={() => showAbout = false}>
+    <div class="rules-panel about-panel">
+      <button class="rules-close link" on:click={() => showAbout = false}>✕</button>
+      <h2>{i18n.aboutTitle}</h2>
+      <p>{i18n.aboutDesc}</p>
+      <p class="about-meta">
+        <small>{i18n.aboutVersion(VERSION)}</small>
+        <small>{i18n.aboutAuthor}</small>
+      </p>
+      <a href={REPO_URL} target="_blank" rel="noopener" class="action about-gh">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        {i18n.aboutSource}
+      </a>
+    </div>
   </div>
 {/if}
 </div>
