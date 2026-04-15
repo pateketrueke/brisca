@@ -222,12 +222,12 @@
   }
 
   function canPeekTeammate(playerName) {
-    const isTeam = isTeamGame(viewGame);
-    const deckEmpty = viewGame.deck.length === 0;
+    const isTeam = isTeamGame(game);
+    const deckEmpty = game.deck.length === 0;
     const teammate = getTeammate(playerName);
-    const allFull = viewGame[playerName]?.hand?.length === 3 && viewGame[teammate]?.hand?.length === 3;
-    const isTurn = viewGame.turn === playerName;
-    const notPlayed = !viewGame[playerName]?.played;
+    const allFull = game[playerName]?.hand?.length === 3 && game[teammate]?.hand?.length === 3;
+    const isTurn = game.turn === playerName;
+    const notPlayed = !game[playerName]?.played;
     const result = isTeam && deckEmpty && allFull && isTurn && notPlayed && !peekingTeammate && !hasPeeked(playerName) && !peekedLocal && !!teammate;
     log('canPeekTeammate', { playerName, isTeam, deckEmpty, allFull, isTurn, notPlayed, teammate, result });
     return result;
