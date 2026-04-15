@@ -833,7 +833,8 @@
 {/if}
 
 {#if showRules}
-  <div class="overlay shown" on:click|self={() => showRules = false}>
+  <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+  <div class="overlay shown" role="dialog" aria-modal="true" on:click|self={() => showRules = false}>
     <div class="rules-panel">
       <button class="rules-close link" on:click={() => showRules = false}>✕</button>
       <h2>{i18n.rules.title}</h2>
@@ -841,9 +842,11 @@
       <p>{i18n.rules.deck}</p>
       <p><strong>{i18n.rules.values}</strong></p>
       <table class="rules-table">
-        {#each i18n.rules.valueRows as [card, pts]}
-          <tr><td>{card}</td><td>{pts}</td></tr>
-        {/each}
+        <tbody>
+          {#each i18n.rules.valueRows as [card, pts]}
+            <tr><td>{card}</td><td>{pts}</td></tr>
+          {/each}
+        </tbody>
       </table>
       <p>{i18n.rules.triumph}</p>
       <p>{i18n.rules.turn}</p>
