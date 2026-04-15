@@ -194,10 +194,11 @@
 
   function canPeekTeammate(playerName) {
     return isTeamGame(viewGame)
-      && !viewGame.deck.length
+      && viewGame.deck.length === 0
       && viewGame.turn === playerName
-      && !viewGame[playerName].played
-      && !peekingTeammate;
+      && !viewGame[playerName]?.played
+      && !peekingTeammate
+      && !!getTeammate(playerName);
   }
 
   function peekTeammate() {
@@ -633,7 +634,8 @@
     !game[game.turn]?.played &&
     !player &&
     !customDialog &&
-    !isReplaying
+    !isReplaying &&
+    !canPeekTeammate(game.turn)
   ) {
     clearTimeout(autoDrawTimeout);
     autoDrawTimeout = setTimeout(drawCards, 350);
@@ -962,12 +964,12 @@
 <Dialog hidden={!cards.length || inlinePicker}>
   <div>
     {#if cards.length}
-      {#if peekingTeammate}
+      {#if peekingTeammate && player && getTeammate(player)}
         <h3 class="flex reset center">
           {i18n.teamPeek} — {getDisplayName(getTeammate(player))}
         </h3>
         <div class="card-picker">
-          {#each viewGame[getTeammate(player)].hand as card (`${card.kind}:${card.number}`)}
+          {#each (viewGame[getTeammate(player)]?.hand || []) as card (`${card.kind}:${card.number}`)}
             <Card value={card} />
           {/each}
         </div>
@@ -995,6 +997,8 @@
             />
           {/each}
         </div>
+        <label class="auto-check flex center space" style="justify-content: center; margin-top: 12px;">
+          <input type="checkbox" bind:checked={autoCheck} on:change={updateAutoCheck} />
           <small>{i18n.autoOk}</small>
         </label>
       {/if}
