@@ -18,7 +18,7 @@ define iif
   @(($(1) > /dev/null 2>&1) && echo "$(2)") || echo "$(3)"
 endef
 
-.PHONY: build pages deploy
+.PHONY: docker pages deploy
 
 ci: deps
 	@npm test
@@ -41,11 +41,11 @@ clean:
 	@$(call iif,rm -r $(src),Built artifacts were deleted,Artifacts already deleted)
 
 pages: clean dist
-deploy:
+deploy: $(src)
 	@cd $(src) && git add --all && git commit -m "$(message)"
 	@git push origin $(target) -f
 
-build:
+docker:
 	@docker build --build-arg SOURCE_VERSION -t brisca .
 
 start:
