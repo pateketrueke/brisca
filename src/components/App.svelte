@@ -834,7 +834,7 @@
 
 {#if showRules}
   <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-  <div class="overlay shown" role="dialog" aria-modal="true" on:click|self={() => showRules = false}>
+  <div class="overlay shown" role="dialog" aria-modal="true" tabindex="-1" on:click|self={() => showRules = false}>
     <div class="rules-panel">
       <button class="rules-close link" on:click={() => showRules = false}>✕</button>
       <h2>{i18n.rules.title}</h2>
