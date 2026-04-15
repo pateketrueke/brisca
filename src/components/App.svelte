@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { Confetti } from 'svelte-confetti';
+  import BriscaIcon from '../lib/assets/brisca.svg?raw';
 
   import {
     EMPTY_GAME,
@@ -729,7 +730,12 @@
 
 <div id="app">
 <header>
-  <h1>{i18n.title} <small>{VERSION}</small></h1>
+  <h1 title="{i18n.title}">
+    <a href="/">
+      <span class="logo">{@html BriscaIcon}</span>
+    </a>
+    <small>{VERSION}</small>
+  </h1>
   <span class="header-controls">
     {#if viewGame.status === 'started'}
       <button
