@@ -1040,10 +1040,15 @@
           {i18n.teamReturn}
         </button>
       {:else}
-        <h3 class="flex reset center">
-          <SvgIcon name="at" />
-          {getDisplayName(player)} — {i18n.yourTurn}
-        </h3>
+        <div class="picker-header">
+          <h3 class="flex reset center">
+            <SvgIcon name="at" />
+            {getDisplayName(player)} — {i18n.yourTurn}
+          </h3>
+          {#if !autoCheck}
+            <button class="link picker-close" on:click={() => { cards = []; player = undefined; }}>✕</button>
+          {/if}
+        </div>
         {#if canPeekTeammate(player)}
           <button class="team-peek-btn link" on:click={peekTeammate}>
             👀 {i18n.teamPeek}
