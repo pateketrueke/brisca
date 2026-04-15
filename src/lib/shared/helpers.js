@@ -60,7 +60,7 @@ export const TRANSLATIONS = {
     howToPlay: '¿Cómo se juega?',
     rules: {
       title: 'Cómo se juega la Brisca',
-      intro: 'La Brisca es un juego de cartas mexicano para 2–4 jugadores. El que más puntos junte, gana.',
+      intro: 'La Brisca es un clásico juego de cartas español para 2–4 jugadores. El que más puntos junte, gana.',
       deck: 'Se juega con baraja española de 40 cartas: Oros, Copas, Bastos y Espadas. Se quitan los 8 y los 9.',
       values: 'Valor de las cartas:',
       valueRows: [
@@ -71,9 +71,9 @@ export const TRANSLATIONS = {
         ['Sota (10)', '2 pts'],
         ['2, 4, 5, 6, 7', '0 pts'],
       ],
-      triumph: 'Triunfo: al repartir se voltea una carta y se mete debajo del mazo. Ese palo es el triunfo — le gana a todos los demás.',
-      turn: 'En tu turno juegas una carta. Gana la carta más alta del palo que salió, a menos que alguien tire triunfo — ahí gana el triunfo más alto.',
-      draw: 'Después de cada mano, el ganador agarra carta primero, luego los demás.',
+      triumph: 'Triunfo: al repartir se voltea una carta y se mete debajo del mazo. Ese palo es el triunfo — le gana a todos los demás palos.',
+      turn: 'En tu turno juegas una carta. Gana la carta más alta del palo que salió, a menos que alguien eche triunfo — ahí gana el triunfo más alto.',
+      draw: 'Después de cada baza, el ganador agarra carta primero, luego los demás.',
       lastRound: 'Al final, cuando ya no hay mazo, tienes que seguir el palo que salió si puedes, o echar triunfo si no tienes.',
       winning: 'Gana quien tenga más puntos al terminar. En total hay 120 puntos.',
     },
