@@ -159,6 +159,20 @@
   );
   $: currentBots = viewGame.bots || [];
   $: timelineLength = game.history?.length || 0;
+
+  // Debug logging — only active with ?debug=1
+  function log(event, data = {}) {
+    if (!isDebugMode) return;
+    const turn = game?.turn;
+    const deck = game?.deck?.length ?? '?';
+    const hand = turn && game[turn] ? game[turn].hand?.length : '?';
+    console.log(
+      `%c[brisca] %c${event}`,
+      'color:#f5a623;font-weight:bold',
+      'color:#eaeaea',
+      { turn, deck, hand, checking, autoCheck, allPlayed, pendingPlay, ...data }
+    );
+  }
   $: timelineCursor = timelineLength ? game.cursor : 0;
   $: canScrubTimeline = timelineLength > 1;
   $: timelinePayload = timelineLength ? getTimelinePayload(viewGame) : null;
@@ -393,6 +407,7 @@
   function checkPlay() {
     if (isReplaying || checking) return;
     checking = true;
+    log('checkPlay:start');
 
     let winner;
     game.ordered.forEach((player) => {
@@ -489,9 +504,12 @@
           syncGame({ ...EMPTY_GAME });
         }
       );
+      log('checkPlay:gameOver', { winner: winnerName });
       checking = false;
       return;
     }
+
+    log('checkPlay:handWinner', { winner: winner.player, autoCheck });
 
     if (autoCheck) {
       showToast(i18n.winsHand(getDisplayName(winner.player)));
@@ -502,6 +520,7 @@
         turn: winner.player,
         winner: winner.player,
       });
+      log('checkPlay:done:autoCheck');
       checking = false;
     } else {
       syncGame({ ...game, winner: winner.player });
@@ -513,6 +532,7 @@
         },
         () => {
           pending = undefined;
+          log('checkPlay:done:dialog');
           checking = false;
           syncGame({
             ...game,
@@ -558,10 +578,12 @@
     if (isReplaying || isBot(game.turn)) return;
     player = game.turn;
     cards = getLegalCards(game, player).slice();
+    log('drawCards', { player, cards: cards.length });
   }
 
   function playCard(name, card) {
     if (isReplaying) return;
+    log('playCard', { name, card: `${card.kind}:${card.number}` });
 
     const offset = game.players.findIndex((x) => name === x);
     const next = (offset + 1) % game.players.length;
@@ -589,6 +611,7 @@
   }
 
   function chooseIt(card) {
+    log('chooseIt', { card: `${card.kind}:${card.number}` });
     playCard(player, card);
   }
 
@@ -617,6 +640,7 @@
     }
 
     const card = chooseBotCard(game, game.turn);
+    log('playBotTurn', { card: card ? `${card.kind}:${card.number}` : 'none' });
     if (card) playCard(game.turn, card);
   }
 
@@ -628,6 +652,7 @@
     !customDialog &&
     !isReplaying
   ) {
+    log('reactive:botTurn');
     clearTimeout(botTimeout);
     botTimeout = setTimeout(playBotTurn, 350);
   }
@@ -643,6 +668,7 @@
     !isReplaying &&
     !canPeekTeammate(game.turn)
   ) {
+    log('reactive:autoDraw');
     clearTimeout(autoDrawTimeout);
     autoDrawTimeout = setTimeout(drawCards, 350);
   }
@@ -656,6 +682,7 @@
     !isReplaying &&
     !checking
   ) {
+    log('reactive:checkPlay');
     clearTimeout(botCheckTimeout);
     botCheckTimeout = setTimeout(checkPlay, 500);
   }
