@@ -184,6 +184,13 @@
   }
 
   let showRules = false;
+  let inlinePicker = false;
+
+  onMount(() => {
+    const mq = window.matchMedia('(min-width: 720px)');
+    inlinePicker = mq.matches;
+    mq.addEventListener('change', e => { inlinePicker = e.matches; });
+  });
 
   $: defaultNames = i18n.defaultNames;
   function getDisplayName(id) {
@@ -796,6 +803,19 @@
                 <Card value={card} />
             {/each}
           </div>
+          {#if inlinePicker && cards.length && player === name}
+            <div class="inline-picker">
+              {#each cards as card, o (`${card.kind}:${card.number}`)}
+                <Card
+                  onClick={() => chooseIt(card)}
+                  disabled={isInvalid(card)}
+                  focused={o === selected}
+                  type="button"
+                  value={card}
+                />
+              {/each}
+            </div>
+          {/if}
         </li>
       {/each}
     </ul>
@@ -868,7 +888,7 @@
 </div>
 {/if}
 
-<Dialog hidden={!cards.length}>
+<Dialog hidden={!cards.length || inlinePicker}>
   <div>
     {#if cards.length}
       <h3 class="flex reset center">

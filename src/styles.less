@@ -534,6 +534,20 @@ header {
   }
 }
 
+.inline-picker {
+  display: flex;
+  gap: var(--card-gap);
+  flex-wrap: wrap;
+  justify-content: center;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  width: 100%;
+
+  .card {
+    --card-width: min(18vw, 90px);
+  }
+}
+
 .card-picker {
   display: flex;
   flex-wrap: wrap;
