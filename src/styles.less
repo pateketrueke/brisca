@@ -519,7 +519,12 @@ header {
     transform: scale(0.95);
     transition: transform 0.2s ease-out;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    display: flex;
     margin: auto;
+    gap: 16px;
   }
 
   &.shown {
@@ -536,7 +541,6 @@ header {
   }
 
   h3 {
-    margin: 0 0 16px;
     font-size: 1.1rem;
   }
 

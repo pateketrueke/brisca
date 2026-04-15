@@ -774,8 +774,8 @@
         tabindex="-1"
         disabled={canceling || isReplaying}
         on:click={cancelGame}>{i18n.exit}</button>
+      /
     {/if}
-    /
     <button class="link" tabindex="-1" on:click={toggleLang}>
       {lang === 'en' ? 'ES' : 'EN'}
     </button>
