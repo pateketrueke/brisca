@@ -214,6 +214,7 @@
   let showRules = false;
   let inlinePicker = false;
   let peekingTeammate = false; // showing teammate's cards in picker
+  let peekedLocal = false;    // local flag while syncGame propagates
 
   // peeked is persisted in game state as game.peeked (set of player IDs who already peeked this round)
   function hasPeeked(playerName) {
@@ -227,19 +228,19 @@
     const allFull = viewGame[playerName]?.hand?.length === 3 && viewGame[teammate]?.hand?.length === 3;
     const isTurn = viewGame.turn === playerName;
     const notPlayed = !viewGame[playerName]?.played;
-    const result = isTeam && deckEmpty && allFull && isTurn && notPlayed && !peekingTeammate && !hasPeeked(playerName) && !!teammate;
+    const result = isTeam && deckEmpty && allFull && isTurn && notPlayed && !peekingTeammate && !hasPeeked(playerName) && !peekedLocal && !!teammate;
     log('canPeekTeammate', { playerName, isTeam, deckEmpty, allFull, isTurn, notPlayed, teammate, result });
     return result;
   }
 
   function peekTeammate() {
     peekingTeammate = true;
+    peekedLocal = true;
+    syncGame({ ...game, peeked: [...(game.peeked || []), player] });
   }
 
   function returnCards() {
     peekingTeammate = false;
-    // persist peek into game state so reload can't bypass it
-    syncGame({ ...game, peeked: [...(game.peeked || []), player] });
   }
   let toast = null;
   let toastTimeout;
@@ -625,6 +626,7 @@
       cards = [];
       selected = -1;
       peekingTeammate = false;
+      peekedLocal = false;
       player = undefined;
     }
   }
