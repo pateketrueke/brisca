@@ -595,8 +595,10 @@ header {
 
 .inline-picker {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--card-gap);
+  justify-content: center;
   width: 100%;
 
   .card {
