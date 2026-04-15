@@ -294,9 +294,10 @@ header {
   border-radius: 8px;
   border: 1px solid var(--border);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  width: 100%;
 
   &.active {
     transition: all 0.15s;
@@ -307,10 +308,11 @@ header {
 
   .player-header {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 8px;
-    width: 100%;
-    justify-content: center;
+    flex-shrink: 0;
+    min-width: 64px;
   }
 
   .player-name {
@@ -326,9 +328,9 @@ header {
   .player-cards {
     display: flex;
     gap: var(--card-gap);
-    min-height: var(--card-height);
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    flex: 1;
     &:empty { display: none; }
   }
 
@@ -815,9 +817,21 @@ header {
   }
 
   .player {
-    gap: 12px;
     flex: 1 1 200px;
     max-width: 280px;
+    flex-direction: column;
+    align-items: center;
+
+    .player-header {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .player-cards {
+      justify-content: center;
+    }
   }
 }
 

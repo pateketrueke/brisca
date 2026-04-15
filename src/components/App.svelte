@@ -764,9 +764,10 @@
     <a href="/" class="logo">
       {@html BriscaIcon}
     </a>
-    <small>{VERSION}</small>
   </h1>
   <span class="header-controls">
+    <small>{VERSION}</small>
+    /
     {#if viewGame.status === 'started'}
       <button
         class="link"
@@ -881,26 +882,6 @@
     <ul data-players>
       {#each viewGame.players as name (name)}
         <li class="player flex" class:active={viewGame.turn === name && !viewGame[name].played}>
-          <div class="player-header">
-            <button
-                class="action"
-                tabindex="-1"
-                disabled={isReplaying || viewGame.turn !== name || viewGame[name].played || (autoCheck && !isBot(name))}
-                on:click={drawCards}
-            >
-                <span class="player-name">{getDisplayName(name)}</span>
-                <span class="icons flex">
-                    {#if name === viewGame.winner}<SvgIcon name="star" fill="gold" />{/if}
-                    {#if isBot(name)}<SvgIcon name="robot"/>{/if}
-                </span>
-            </button>
-            <span class="player-score">
-              {viewGame[name].stack.reduce((s, c) => s + (BRISCA_VALUES[c.number] || 0), 0)} pts
-            </span>
-            {#if isTeamGame(viewGame)}
-              <span class="team-badge" data-team={getTeam(name)}>{i18n.team(getTeam(name))}</span>
-            {/if}
-          </div>
           <div class="player-cards">
             {#each viewGame[name].set as card (`${card.kind}:${card.number}`)}
                 <Card value={card} />
@@ -919,6 +900,26 @@
               {/each}
             </div>
           {/if}
+          <div class="player-header">
+            <button
+                class="action"
+                tabindex="-1"
+                disabled={isReplaying || viewGame.turn !== name || viewGame[name].played || (autoCheck && !isBot(name))}
+                on:click={drawCards}
+            >
+                <span class="player-name">{getDisplayName(name)}</span>
+                <span class="icons flex">
+                    {#if name === viewGame.winner}<SvgIcon name="star" fill="gold" />{/if}
+                    {#if isBot(name)}<SvgIcon name="robot"/>{/if}
+                </span>
+            </button>
+            {#if isTeamGame(viewGame)}
+              <span class="team-badge" data-team={getTeam(name)}>{i18n.team(getTeam(name))}</span>
+            {/if}
+            <span class="player-score">
+              {viewGame[name].stack.reduce((s, c) => s + (BRISCA_VALUES[c.number] || 0), 0)} pts
+            </span>
+          </div>
         </li>
       {/each}
     </ul>
