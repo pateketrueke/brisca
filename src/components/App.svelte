@@ -625,6 +625,7 @@
   });
 </script>
 
+<div id="app">
 <header>
   <h1>Brisca <small>{VERSION}</small></h1>
   <span class="header-controls">
@@ -802,6 +803,14 @@
           />
         {/each}
       </div>
+      <label class="auto-check flex center space" style="justify-content: center; margin-top: 12px;">
+        <input
+          type="checkbox"
+          bind:checked={autoCheck}
+          on:change={updateAutoCheck}
+        />
+        <small>Auto OK</small>
+      </label>
     {:else}
       Loading...
     {/if}
@@ -830,3 +839,4 @@
     />
   </div>
 {/if}
+</div>
