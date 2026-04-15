@@ -185,6 +185,14 @@
 
   let showRules = false;
   let inlinePicker = false;
+  let toast = null;
+  let toastTimeout;
+
+  function showToast(message) {
+    clearTimeout(toastTimeout);
+    toast = message;
+    toastTimeout = setTimeout(() => { toast = null; }, 2200);
+  }
 
   onMount(() => {
     const mq = window.matchMedia('(min-width: 720px)');
@@ -450,28 +458,40 @@
     }
 
     syncGame({ ...game, winner: winner.player });
-    pending = setDialog(
-      {
-        icon: 'at',
-        message: i18n.winsHand(getDisplayName(winner.player)),
-        action: i18n.ok,
-      },
-      () => {
-        pending = undefined;
-        syncGame({
-          ...game,
-          ...users,
-          ordered: sorted,
-          turn: winner.player,
-          winner: winner.player,
-        });
-        setDialog({
+
+    if (autoCheck) {
+      showToast(i18n.winsHand(getDisplayName(winner.player)));
+      syncGame({
+        ...game,
+        ...users,
+        ordered: sorted,
+        turn: winner.player,
+        winner: winner.player,
+      });
+    } else {
+      pending = setDialog(
+        {
           icon: 'at',
-          message: i18n.opensGame(getDisplayName(winner.player)),
-          timeout: 1000,
-        });
-      }
-    );
+          message: i18n.winsHand(getDisplayName(winner.player)),
+          action: i18n.ok,
+        },
+        () => {
+          pending = undefined;
+          syncGame({
+            ...game,
+            ...users,
+            ordered: sorted,
+            turn: winner.player,
+            winner: winner.player,
+          });
+          setDialog({
+            icon: 'at',
+            message: i18n.opensGame(getDisplayName(winner.player)),
+            timeout: 1000,
+          });
+        }
+      );
+    }
   }
 
   let canceling;
@@ -927,6 +947,10 @@
       onAction={customDialog.resolve}
       onCancel={customDialog.reject}
     />
+{/if}
+
+{#if toast}
+  <div class="toast" role="status">{toast}</div>
 {/if}
 
 {#if viewGame.status === 'finished'}
