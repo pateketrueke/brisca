@@ -757,12 +757,18 @@
 
 <div class="game-board">
   {#if viewGame.status === 'started'}
-    <div class="table-center">
-      <span class="pot" data-board-pot>
-        <Card type="deck" number={viewGame.deck.length}>
-          {#if viewGame.triumph}<Card value={viewGame.triumph} />{/if}
-        </Card>
-      </span>
+    <div class="table-center" data-board-pot>
+      <div class="felt">
+        <div class="felt-deck">
+          <Card type="deck" number={viewGame.deck.length} />
+          {#if viewGame.triumph}
+            <div class="triumph-wrap">
+              <Card value={viewGame.triumph} />
+              <small class="triumph-label">triunfo</small>
+            </div>
+          {/if}
+        </div>
+      </div>
     </div>
 
     <ul data-players>
