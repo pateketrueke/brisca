@@ -850,6 +850,10 @@
       <SvgIcon name="enter" />
       {i18n.deal}
     </button>
+    <label class="auto-check flex center space">
+      <input type="checkbox" bind:checked={autoCheck} on:change={updateAutoCheck} />
+      <small>{i18n.autoOk}</small>
+    </label>
     <button class="link" on:click={() => showRules = true} tabindex="-1">
       {i18n.howToPlay}
     </button>
