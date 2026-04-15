@@ -578,7 +578,7 @@
   function drawCards() {
     if (isReplaying || isBot(game.turn)) return;
     player = game.turn;
-    cards = getLegalCards(game, player).slice();
+    cards = game[player].hand.slice();
     log('drawCards', { player, cards: cards.length });
   }
 
@@ -618,12 +618,9 @@
 
   function isInvalid(card) {
     if (!game.deck.length && game.turn !== game.winner) {
-      return isInvalidBrisca(
-        game[player]?.hand || cards,
-        card,
-        game[game.winner]?.set[0],
-        game.triumph
-      );
+      const hand = game[player]?.hand || cards;
+      const opener = game[game.winner]?.set[0];
+      if (opener) return isInvalidBrisca(hand, card, opener, game.triumph);
     }
   }
 
