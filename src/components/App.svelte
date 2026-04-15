@@ -207,6 +207,7 @@
   let showRules = false;
   let inlinePicker = false;
   let peekingTeammate = false; // showing teammate's cards in picker
+  let peekedThisTurn = false; // already peeked once this turn
 
   function canPeekTeammate(playerName) {
     const isTeam = isTeamGame(viewGame);
@@ -215,7 +216,7 @@
     const allFull = viewGame[playerName]?.hand?.length === 3 && viewGame[teammate]?.hand?.length === 3;
     const isTurn = viewGame.turn === playerName;
     const notPlayed = !viewGame[playerName]?.played;
-    const result = isTeam && deckEmpty && allFull && isTurn && notPlayed && !peekingTeammate && !!teammate;
+    const result = isTeam && deckEmpty && allFull && isTurn && notPlayed && !peekingTeammate && !peekedThisTurn && !!teammate;
     log('canPeekTeammate', { playerName, isTeam, deckEmpty, allFull, isTurn, notPlayed, teammate, result });
     return result;
   }
@@ -226,6 +227,7 @@
 
   function returnCards() {
     peekingTeammate = false;
+    peekedThisTurn = true;
   }
   let toast = null;
   let toastTimeout;
@@ -609,6 +611,7 @@
       cards = [];
       selected = -1;
       peekingTeammate = false;
+      peekedThisTurn = false;
       player = undefined;
     }
   }
