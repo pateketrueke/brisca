@@ -4,10 +4,6 @@ from := next
 target := gh-pages
 message := Release: $(shell date)
 
-GIT_REVISION ?= $(shell git rev-parse --short=7 HEAD)
-NODE_ENV ?= development
-PWD=$(shell pwd)
-
 ifneq ($(wildcard .env),)
 	include .env
 endif
@@ -18,7 +14,7 @@ define iif
   @(($(1) > /dev/null 2>&1) && echo "$(2)") || echo "$(3)"
 endef
 
-.PHONY: docker pages deploy
+.PHONY: pages deploy
 
 ci: deps
 	@npm test
@@ -44,12 +40,3 @@ pages: clean dist
 deploy: $(src)
 	@cd $(src) && git add --all && git commit -m "$(message)"
 	@git push origin $(target) -f
-
-docker:
-	@docker build --build-arg SOURCE_VERSION -t brisca .
-
-start:
-	@docker run -p 8085:8080 brisca
-
-migrate:
-	@npx drizzle-kit generate:sqlite --out=api/database/migrations --schema=api/database/schema.js
