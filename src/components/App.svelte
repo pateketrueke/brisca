@@ -209,13 +209,15 @@
   let peekingTeammate = false; // showing teammate's cards in picker
 
   function canPeekTeammate(playerName) {
-    return isTeamGame(viewGame)
-      && viewGame.deck.length === 0
-      && viewGame.players.every(p => viewGame[p]?.hand?.length === 3)
-      && viewGame.turn === playerName
-      && !viewGame[playerName]?.played
-      && !peekingTeammate
-      && !!getTeammate(playerName);
+    const isTeam = isTeamGame(viewGame);
+    const deckEmpty = viewGame.deck.length === 0;
+    const allFull = viewGame.players.every(p => viewGame[p]?.played || viewGame[p]?.hand?.length === 3);
+    const isTurn = viewGame.turn === playerName;
+    const notPlayed = !viewGame[playerName]?.played;
+    const hasTeammate = !!getTeammate(playerName);
+    const result = isTeam && deckEmpty && allFull && isTurn && notPlayed && !peekingTeammate && hasTeammate;
+    log('canPeekTeammate', { playerName, isTeam, deckEmpty, allFull, isTurn, notPlayed, hasTeammate, result });
+    return result;
   }
 
   function peekTeammate() {
