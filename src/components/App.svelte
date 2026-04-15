@@ -665,8 +665,7 @@
     !game[game.turn]?.played &&
     !player &&
     !customDialog &&
-    !isReplaying &&
-    !canPeekTeammate(game.turn)
+    !isReplaying
   ) {
     log('reactive:autoDraw');
     clearTimeout(autoDrawTimeout);
