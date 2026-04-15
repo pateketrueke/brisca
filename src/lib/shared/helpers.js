@@ -65,7 +65,7 @@ export const TRANSLATIONS = {
     rules: {
       title: 'Cómo se juega la Brisca',
       intro: 'La Brisca es un clásico juego de cartas español para 2–4 jugadores. El que más puntos junte, gana.',
-      deck: 'Se juega con baraja española de 40 cartas: Oros, Copas, Bastos y Espadas. Se quitan los 8 y los 9.',
+      deck: 'Se juega con baraja española de 40 cartas: Oros, Copas, Bastos y Espadas.',
       values: 'Valor de las cartas:',
       valueRows: [
         ['1 (As)', '11 pts'],

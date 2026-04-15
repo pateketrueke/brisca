@@ -151,6 +151,7 @@
     { length: Number(viewGame.length || 2) },
     (_, i) => `p${i + 1}`
   );
+  $: currentBots = viewGame.bots || [];
   $: timelineLength = game.history?.length || 0;
   $: timelineCursor = timelineLength ? game.cursor : 0;
   $: canScrubTimeline = timelineLength > 1;
@@ -743,12 +744,12 @@
           />
           <button
             class="seat-type"
-            class:is-bot={isBot(id)}
+            class:is-bot={currentBots.includes(id)}
             disabled={id === 'p1'}
             on:click={() => toggleBot(id)}
-            title={isBot(id) ? i18n.bot : i18n.human}
+            title={currentBots.includes(id) ? i18n.bot : i18n.human}
           >
-            {#if isBot(id)}<SvgIcon name="robot" />{:else}<SvgIcon name="at" />{/if}
+            {#if currentBots.includes(id)}<SvgIcon name="robot" />{:else}<SvgIcon name="at" />{/if}
           </button>
         </div>
       {/each}
