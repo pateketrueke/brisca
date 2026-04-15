@@ -1096,7 +1096,7 @@
   <div class="toast" role="status">{toast}</div>
 {/if}
 
-{#if viewGame.status === 'finished'}
+{#if viewGame.status === 'finished' || viewGame.status === 'pending'}
   <div class="confetti">
     <Confetti
       x={[-5, 5]}
