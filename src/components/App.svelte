@@ -921,24 +921,15 @@
                   👀 {i18n.teamPeek}
                 </button>
               {/if}
-              {#if peekingTeammate && getTeammate(name)}
-                <div class="inline-peek">
-                  {#each (game[getTeammate(name)]?.hand || []) as card (`${card.kind}:${card.number}`)}
-                    <Card value={card} />
-                  {/each}
-                  <button class="link" on:click={returnCards}>{i18n.teamReturn}</button>
-                </div>
-              {:else}
-                {#each cards as card, o (`${card.kind}:${card.number}`)}
-                  <Card
-                    onClick={() => chooseIt(card)}
-                    disabled={isInvalid(card)}
-                    focused={o === selected}
-                    type="button"
-                    value={card}
-                  />
-                {/each}
-              {/if}
+              {#each cards as card, o (`${card.kind}:${card.number}`)}
+                <Card
+                  onClick={() => chooseIt(card)}
+                  disabled={isInvalid(card)}
+                  focused={o === selected}
+                  type="button"
+                  value={card}
+                />
+              {/each}
             </div>
           {/if}
           <div class="player-header">
@@ -1042,7 +1033,7 @@
 </div>
 {/if}
 
-<Dialog hidden={!cards.length || inlinePicker}>
+<Dialog hidden={!cards.length || (inlinePicker && !peekingTeammate)}>
   <div>
     {#if cards.length}
       {#if peekingTeammate && player && getTeammate(player)}
