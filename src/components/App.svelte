@@ -28,7 +28,7 @@
   import Dialog from './Dialog.svelte';
   import Card from './Card.svelte';
 
-  const VERSION = 'HEAD';
+  const VERSION = import.meta.env.GIT_REVISION || 'HEAD';
 
   // i18n
   let lang = getLang();
@@ -1069,7 +1069,7 @@
         </label>
       {/if}
     {:else}
-      Loading...
+      {i18n.loading}
     {/if}
   </div>
 </Dialog>

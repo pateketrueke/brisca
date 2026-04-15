@@ -4,6 +4,8 @@ from := next
 target := gh-pages
 message := Release: $(shell date)
 
+GIT_REVISION=$(shell git rev-parse --short=7 HEAD)
+
 ifneq ($(wildcard .env),)
 	include .env
 endif
