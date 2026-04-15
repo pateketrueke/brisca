@@ -211,6 +211,7 @@
   function canPeekTeammate(playerName) {
     return isTeamGame(viewGame)
       && viewGame.deck.length === 0
+      && viewGame.players.every(p => viewGame[p]?.hand?.length === 3)
       && viewGame.turn === playerName
       && !viewGame[playerName]?.played
       && !peekingTeammate
