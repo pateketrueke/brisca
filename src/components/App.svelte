@@ -207,7 +207,11 @@
   let showRules = false;
   let inlinePicker = false;
   let peekingTeammate = false; // showing teammate's cards in picker
-  let peekedThisTurn = false; // already peeked once this turn
+
+  // peeked is persisted in game state as game.peeked (set of player IDs who already peeked this round)
+  function hasPeeked(playerName) {
+    return (viewGame.peeked || []).includes(playerName);
+  }
 
   function canPeekTeammate(playerName) {
     const isTeam = isTeamGame(viewGame);
@@ -216,7 +220,7 @@
     const allFull = viewGame[playerName]?.hand?.length === 3 && viewGame[teammate]?.hand?.length === 3;
     const isTurn = viewGame.turn === playerName;
     const notPlayed = !viewGame[playerName]?.played;
-    const result = isTeam && deckEmpty && allFull && isTurn && notPlayed && !peekingTeammate && !peekedThisTurn && !!teammate;
+    const result = isTeam && deckEmpty && allFull && isTurn && notPlayed && !peekingTeammate && !hasPeeked(playerName) && !!teammate;
     log('canPeekTeammate', { playerName, isTeam, deckEmpty, allFull, isTurn, notPlayed, teammate, result });
     return result;
   }
@@ -227,7 +231,8 @@
 
   function returnCards() {
     peekingTeammate = false;
-    peekedThisTurn = true;
+    // persist peek into game state so reload can't bypass it
+    syncGame({ ...game, peeked: [...(game.peeked || []), player] });
   }
   let toast = null;
   let toastTimeout;
@@ -524,6 +529,7 @@
         ordered: sorted,
         turn: winner.player,
         winner: winner.player,
+        peeked: [],
       });
       log('checkPlay:done:autoCheck');
       checking = false;
@@ -545,6 +551,7 @@
             ordered: sorted,
             turn: winner.player,
             winner: winner.player,
+            peeked: [],
           });
           setDialog({
             icon: 'at',
@@ -611,7 +618,6 @@
       cards = [];
       selected = -1;
       peekingTeammate = false;
-      peekedThisTurn = false;
       player = undefined;
     }
   }
