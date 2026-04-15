@@ -595,14 +595,22 @@ header {
 
 .inline-picker {
   display: flex;
-  gap: var(--card-gap);
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
   width: 100%;
 
   .card {
     --card-width: min(18vw, 73px);
   }
+}
+
+.inline-peek {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--card-gap);
+  align-items: center;
+  justify-content: center;
+  padding-top: 4px;
 }
 
 .card-picker {

@@ -916,15 +916,29 @@
           </div>
           {#if inlinePicker && cards.length && player === name}
             <div class="inline-picker">
-              {#each cards as card, o (`${card.kind}:${card.number}`)}
-                <Card
-                  onClick={() => chooseIt(card)}
-                  disabled={isInvalid(card)}
-                  focused={o === selected}
-                  type="button"
-                  value={card}
-                />
-              {/each}
+              {#if canPeekTeammate(name)}
+                <button class="team-peek-btn link" on:click={peekTeammate}>
+                  👀 {i18n.teamPeek}
+                </button>
+              {/if}
+              {#if peekingTeammate && getTeammate(name)}
+                <div class="inline-peek">
+                  {#each (game[getTeammate(name)]?.hand || []) as card (`${card.kind}:${card.number}`)}
+                    <Card value={card} />
+                  {/each}
+                  <button class="link" on:click={returnCards}>{i18n.teamReturn}</button>
+                </div>
+              {:else}
+                {#each cards as card, o (`${card.kind}:${card.number}`)}
+                  <Card
+                    onClick={() => chooseIt(card)}
+                    disabled={isInvalid(card)}
+                    focused={o === selected}
+                    type="button"
+                    value={card}
+                  />
+                {/each}
+              {/if}
             </div>
           {/if}
           <div class="player-header">
