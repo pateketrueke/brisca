@@ -8,7 +8,7 @@
 }
 
 :root {
-  --card-width: min(22vw, 80px);
+  --card-width: min(22vw, 73px);
   --card-height: calc(var(--card-width) * 1.49);
   --card-gap: clamp(8px, 2vw, 16px);
   --color-oros: #F1CC28;
@@ -567,7 +567,7 @@ header {
   width: 100%;
 
   .card {
-    --card-width: min(18vw, 90px);
+    --card-width: min(18vw, 73px);
   }
 }
 
@@ -706,40 +706,60 @@ header {
 [data-cardset*="BASTOS"] small { background-color: var(--color-bastos); }
 [data-cardset*="ESPADAS"] small { background-color: var(--color-espadas); }
 
-[data-cardset] {
+// Sprite: 627x280px, 4 suits horizontal. Scaled to fit card.
+// At card-width=73px: background-size=313px 140px
+// Positions scale proportionally with card size via background-size: auto
+// We use a fixed scale tied to the original 73px card size.
+[data-cardset],
+[data-cardset="OROS:1"] {
   background-image: url(/images/1.png);
-  background-position: center;
-  background-size: cover;
+  background-position: -11px -14px;
+  background-size: 313px 140px;
 }
+[data-cardset="COPAS:1"],
+[data-cardset="COPAS:2"],
+[data-cardset="COPAS:3"],
+[data-cardset="COPAS:4"],
+[data-cardset="COPAS:5"],
+[data-cardset="COPAS:6"],
+[data-cardset="COPAS:7"],
+[data-cardset="COPAS:10"],
+[data-cardset="COPAS:11"],
+[data-cardset="COPAS:12"] { background-position: -84px -14px; }
+[data-cardset="BASTOS:1"],
+[data-cardset="BASTOS:2"],
+[data-cardset="BASTOS:3"],
+[data-cardset="BASTOS:4"],
+[data-cardset="BASTOS:5"],
+[data-cardset="BASTOS:6"],
+[data-cardset="BASTOS:7"],
+[data-cardset="BASTOS:10"],
+[data-cardset="BASTOS:11"],
+[data-cardset="BASTOS:12"] { background-position: -231.5px -14px; }
+[data-cardset="ESPADAS:1"],
+[data-cardset="ESPADAS:2"],
+[data-cardset="ESPADAS:3"],
+[data-cardset="ESPADAS:4"],
+[data-cardset="ESPADAS:5"],
+[data-cardset="ESPADAS:6"],
+[data-cardset="ESPADAS:7"],
+[data-cardset="ESPADAS:10"],
+[data-cardset="ESPADAS:11"],
+[data-cardset="ESPADAS:12"] { background-position: -156.5px -14px; }
 
-[data-cardset="COPAS:1"], [data-cardset="COPAS:2"], [data-cardset="COPAS:3"],
-[data-cardset="COPAS:4"], [data-cardset="COPAS:5"], [data-cardset="COPAS:6"],
-[data-cardset="COPAS:7"], [data-cardset="COPAS:10"], [data-cardset="COPAS:11"],
-[data-cardset="COPAS:12"] { background-position: center; }
-
-[data-cardset="BASTOS:1"], [data-cardset="BASTOS:2"], [data-cardset="BASTOS:3"],
-[data-cardset="BASTOS:4"], [data-cardset="BASTOS:5"], [data-cardset="BASTOS:6"],
-[data-cardset="BASTOS:7"], [data-cardset="BASTOS:10"], [data-cardset="BASTOS:11"],
-[data-cardset="BASTOS:12"] { background-position: center; }
-
-[data-cardset="ESPADAS:1"], [data-cardset="ESPADAS:2"], [data-cardset="ESPADAS:3"],
-[data-cardset="ESPADAS:4"], [data-cardset="ESPADAS:5"], [data-cardset="ESPADAS:6"],
-[data-cardset="ESPADAS:7"], [data-cardset="ESPADAS:10"], [data-cardset="ESPADAS:11"],
-[data-cardset="ESPADAS:12"] { background-position: center; }
-
-[data-cardset$=":2"] { background-image: url(/images/2.png); }
-[data-cardset$=":3"] { background-image: url(/images/3.png); }
-[data-cardset$=":4"] { background-image: url(/images/4.png); }
-[data-cardset$=":5"] { background-image: url(/images/5.png); }
-[data-cardset$=":6"] { background-image: url(/images/6.png); }
-[data-cardset$=":7"] { background-image: url(/images/7.png); }
-[data-cardset$=":10"] { background-image: url(/images/10.png); }
-[data-cardset$=":11"] { background-image: url(/images/11.png); }
-[data-cardset$=":12"] { background-image: url(/images/12.png); }
+[data-cardset="OROS:2"], [data-cardset="COPAS:2"], [data-cardset="BASTOS:2"], [data-cardset="ESPADAS:2"] { background-image: url(/images/2.png); }
+[data-cardset="OROS:3"], [data-cardset="COPAS:3"], [data-cardset="BASTOS:3"], [data-cardset="ESPADAS:3"] { background-image: url(/images/3.png); }
+[data-cardset="OROS:4"], [data-cardset="COPAS:4"], [data-cardset="BASTOS:4"], [data-cardset="ESPADAS:4"] { background-image: url(/images/4.png); }
+[data-cardset="OROS:5"], [data-cardset="COPAS:5"], [data-cardset="BASTOS:5"], [data-cardset="ESPADAS:5"] { background-image: url(/images/5.png); }
+[data-cardset="OROS:6"], [data-cardset="COPAS:6"], [data-cardset="BASTOS:6"], [data-cardset="ESPADAS:6"] { background-image: url(/images/6.png); }
+[data-cardset="OROS:7"], [data-cardset="COPAS:7"], [data-cardset="BASTOS:7"], [data-cardset="ESPADAS:7"] { background-image: url(/images/7.png); }
+[data-cardset="OROS:10"], [data-cardset="COPAS:10"], [data-cardset="BASTOS:10"], [data-cardset="ESPADAS:10"] { background-image: url(/images/10.png); }
+[data-cardset="OROS:11"], [data-cardset="COPAS:11"], [data-cardset="BASTOS:11"], [data-cardset="ESPADAS:11"] { background-image: url(/images/11.png); }
+[data-cardset="OROS:12"], [data-cardset="COPAS:12"], [data-cardset="BASTOS:12"], [data-cardset="ESPADAS:12"] { background-image: url(/images/12.png); }
 
 @media screen and (min-width: 480px) {
   :root {
-    --card-width: min(18vw, 73px);
+    --card-width: min(16vw, 73px);
   }
 
   [data-players] {
@@ -757,7 +777,7 @@ header {
 
 @media screen and (min-width: 720px) {
   :root {
-    --card-width: min(15vw, 80px);
+    --card-width: 73px;
   }
 
   .game-board {
