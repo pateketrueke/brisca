@@ -787,13 +787,18 @@
     <div class="table-center" data-board-pot>
       <div class="felt">
         <div class="felt-deck">
-          <Card type="deck" number={viewGame.deck.length} />
-          {#if viewGame.triumph}
-            <div class="triumph-wrap">
-              <Card value={viewGame.triumph} />
-              <small class="triumph-label">triunfo</small>
-            </div>
-          {/if}
+          <Card type="deck" number={viewGame.deck.length}>
+            {#if viewGame.triumph}
+              <span class="card triumph-card"
+                data-cardset="{viewGame.triumph.kind}:{viewGame.triumph.number}"
+                title="{viewGame.triumph.number} of {viewGame.triumph.kind}"
+              >
+                <sub>{viewGame.triumph.number}</sub>
+                <small>{viewGame.triumph.kind}</small>
+                <sup>{viewGame.triumph.number}</sup>
+              </span>
+            {/if}
+          </Card>
         </div>
       </div>
     </div>
