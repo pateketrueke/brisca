@@ -1,3 +1,101 @@
+export const TRANSLATIONS = {
+  en: {
+    title: 'Brisca',
+    deal: 'Deal',
+    exit: 'Exit',
+    ok: 'OK',
+    autoOk: 'Auto OK',
+    players: 'Players',
+    human: 'Human',
+    bot: 'Bot',
+    yourTurn: "Your turn",
+    turnsLeft: n => `${n} turn${n === 1 ? '' : 's'} left`,
+    winsHand: name => `${name} wins the hand!`,
+    winsGame: name => `${name} wins the game!`,
+    opensGame: name => `${name} opens`,
+    scored: (name, pts) => `${name} scored ${pts} pts`,
+    exitConfirm: 'Do you want to end this game?',
+    cancel: 'Cancel',
+    continue: 'Continue',
+    howToPlay: 'How to play',
+    rules: {
+      title: 'How to play Brisca',
+      intro: 'Brisca is a classic Spanish trick-taking card game for 2–4 players.',
+      deck: 'The deck has 40 cards in 4 suits: Coins (Oros), Cups (Copas), Clubs (Bastos), and Swords (Espadas). Cards 8 and 9 are removed.',
+      values: 'Card values:',
+      valueRows: [
+        ['1 (Ace)', '11 pts'],
+        ['3', '10 pts'],
+        ['King (12)', '4 pts'],
+        ['Knight (11)', '3 pts'],
+        ['Jack (10)', '2 pts'],
+        ['2, 4, 5, 6, 7', '0 pts'],
+      ],
+      triumph: 'Triumph: One card is drawn after dealing and placed under the deck. Its suit is the trump suit — it beats all other suits.',
+      turn: 'On your turn, play one card. The highest card of the leading suit wins, unless a trump card is played — the highest trump wins.',
+      draw: 'After each trick, the winner draws first, then others in order.',
+      lastRound: 'Last round rule: when the deck is empty, you must follow the leading suit if possible, or play trump if you cannot.',
+      winning: 'The player with the most points at the end wins. There are 120 points total.',
+    },
+    defaultNames: { p1: 'You', p2: 'Bot', p3: 'Bot 2', p4: 'Bot 3' },
+  },
+  es: {
+    title: 'Brisca',
+    deal: 'Repartir',
+    exit: 'Salir',
+    ok: 'OK',
+    autoOk: 'Auto OK',
+    players: 'Jugadores',
+    human: 'Humano',
+    bot: 'Bot',
+    yourTurn: 'Tu turno',
+    turnsLeft: n => `${n} turno${n === 1 ? '' : 's'} restante${n === 1 ? '' : 's'}`,
+    winsHand: name => `¡${name} gana la mano!`,
+    winsGame: name => `¡${name} gana la partida!`,
+    opensGame: name => `${name} abre`,
+    scored: (name, pts) => `${name} consiguió ${pts} pts`,
+    exitConfirm: '¿Quieres terminar esta partida?',
+    cancel: 'Cancelar',
+    continue: 'Continuar',
+    howToPlay: 'Cómo jugar',
+    rules: {
+      title: 'Cómo jugar a la Brisca',
+      intro: 'La Brisca es un clásico juego de cartas español por bazas para 2–4 jugadores.',
+      deck: 'La baraja tiene 40 cartas en 4 palos: Oros, Copas, Bastos y Espadas. Se retiran los 8 y los 9.',
+      values: 'Valores de las cartas:',
+      valueRows: [
+        ['1 (As)', '11 pts'],
+        ['3', '10 pts'],
+        ['Rey (12)', '4 pts'],
+        ['Caballo (11)', '3 pts'],
+        ['Sota (10)', '2 pts'],
+        ['2, 4, 5, 6, 7', '0 pts'],
+      ],
+      triumph: 'Triunfo: Tras repartir se levanta una carta y se coloca bajo el mazo. Su palo es el triunfo — gana a todos los demás palos.',
+      turn: 'En tu turno, juega una carta. Gana la carta más alta del palo de salida, salvo que se juegue un triunfo — gana el triunfo más alto.',
+      draw: 'Tras cada baza, el ganador roba primero, luego los demás en orden.',
+      lastRound: 'Última ronda: cuando el mazo se agota, debes seguir el palo de salida si puedes, o jugar triunfo si no.',
+      winning: 'Gana quien más puntos tenga al final. Hay 120 puntos en total.',
+    },
+    defaultNames: { p1: 'Tú', p2: 'Bot', p3: 'Bot 2', p4: 'Bot 3' },
+  },
+};
+
+export function getLang() {
+  try {
+    if (localStorage.$lang) return localStorage.$lang;
+  } catch { /* ignore */ }
+  return navigator.language?.startsWith('es') ? 'es' : 'en';
+}
+
+export function setLang(lang) {
+  try { localStorage.setItem('$lang', lang); } catch { /* ignore */ }
+}
+
+export function t(lang = 'en') {
+  return TRANSLATIONS[lang] || TRANSLATIONS.en;
+}
+
 export const EMPTY_GAME = {
   bots: ['p2'],
   deck: [],

@@ -13,14 +13,39 @@
     getCardPoints,
     getBriscaDeck,
     isInvalidBrisca,
+    getLang,
+    setLang,
+    t,
   } from '../lib/shared/helpers';
 
   import SvgIcon from './SvgIcon.svelte';
   import Dialog from './Dialog.svelte';
   import Card from './Card.svelte';
 
-  // fix this later
   const VERSION = 'HEAD';
+
+  // i18n
+  let lang = getLang();
+  $: i18n = t(lang);
+
+  function toggleLang() {
+    lang = lang === 'en' ? 'es' : 'en';
+    setLang(lang);
+  }
+
+  // theme
+  function getTheme() {
+    try { if (localStorage.$theme) return localStorage.$theme; } catch { /* ignore */ }
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  let theme = 'light';
+  onMount(() => { theme = getTheme(); });
+  $: if (typeof document !== 'undefined') document.documentElement.dataset.theme = theme;
+
+  function toggleTheme() {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem('$theme', theme); } catch { /* ignore */ }
+  }
 
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
@@ -148,10 +173,23 @@
   let autoCheck = false;
   let showTimelineDebug = false;
   const isDebugMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('debug');
+
+  // Player display names (separate from internal IDs)
+  let playerNames = {};
   try {
     autoCheck = localStorage.$autoCheck === 'true';
+    playerNames = JSON.parse(localStorage.$names || '{}');
   } catch {
     // ignore
+  }
+
+  $: defaultNames = i18n.defaultNames;
+  function getDisplayName(id) {
+    return playerNames[id] || defaultNames[id] || id;
+  }
+  function setDisplayName(id, name) {
+    playerNames = { ...playerNames, [id]: name || defaultNames[id] || id };
+    try { localStorage.setItem('$names', JSON.stringify(playerNames)); } catch { /* ignore */ }
   }
 
   /**
@@ -390,9 +428,9 @@
       pending = setDialog(
         {
           icon: 'at',
-          action: 'CLOSE',
-          message: `${scores[0].name} won the game!`,
-          description: `${scores.map((player, i) => `${BRISCA_PRIZE[i]} @${player.name} scored ${player.score} points`).join(', <br />')}`,
+          action: i18n.ok,
+          message: i18n.winsGame(getDisplayName(scores[0].name)),
+          description: scores.map((p, i) => `${BRISCA_PRIZE[i]} ${getDisplayName(p.name)} — ${i18n.scored(getDisplayName(p.name), p.score)}`).join('<br />'),
         },
         () => {
           pending = undefined;
@@ -406,8 +444,8 @@
     pending = setDialog(
       {
         icon: 'at',
-        message: `${winner.player} won this hand!`,
-        action: 'CONTINUE',
+        message: i18n.winsHand(getDisplayName(winner.player)),
+        action: i18n.ok,
       },
       () => {
         pending = undefined;
@@ -420,7 +458,7 @@
         });
         setDialog({
           icon: 'at',
-          message: `${winner.player} opens the game`,
+          message: i18n.opensGame(getDisplayName(winner.player)),
           timeout: 1000,
         });
       }
@@ -432,8 +470,9 @@
     canceling = true;
     pending = setDialog(
       {
-        confirm: 'Do you want to end this game?',
-        continue: 'EXIT GAME',
+        confirm: i18n.exitConfirm,
+        cancel: i18n.cancel,
+        continue: i18n.exit,
       },
       () => {
         if (pending.resolved) {
@@ -627,55 +666,78 @@
 
 <div id="app">
 <header>
-  <h1>Brisca <small>{VERSION}</small></h1>
+  <h1>{i18n.title} <small>{VERSION}</small></h1>
   <span class="header-controls">
     {#if viewGame.status === 'started'}
       <button
         class="link"
         tabindex="-1"
         disabled={canceling || isReplaying}
-        on:click={cancelGame}>Exit</button
-      >
-    {:else}
-      <small class="dimmed">Players:</small>
-      <select
-        class="action"
-        bind:value={game.length}
-        disabled={viewGame.status !== 'pending'}
-        on:change={updateLength}
-      >
-        <option>2</option>
-        <option>3</option>
-        <option>4</option>
-      </select>
-      <span class="seat-controls">
-        {#each pendingPlayers as name (name)}
-          <label class="seat-control" class:dimmed={name === 'p1'}>
-            <span>{name}</span>
-            <select
-              class="action"
-              disabled={name === 'p1'}
-              value={isBot(name) ? 'bot' : 'human'}
-              on:change={() => toggleBot(name)}
-            >
-              <option value="human">Human</option>
-              <option value="bot">Bot</option>
-            </select>
-          </label>
-        {/each}
-      </span>
+        on:click={cancelGame}>{i18n.exit}</button>
     {/if}
+    <button class="link" tabindex="-1" on:click={toggleLang}>
+      {lang === 'en' ? 'ES' : 'EN'}
+    </button>
+    <button class="link" tabindex="-1" on:click={toggleTheme}>
+      {theme === 'dark' ? '☀︎' : '☽'}
+    </button>
   </span>
 </header>
 
-<div class="game-board">
-  <span class="pot" data-board-pot>
-    <Card type="deck" number={viewGame.deck.length}>
-      {#if viewGame.triumph}<Card value={viewGame.triumph} />{/if}
-    </Card>
-  </span>
+{#if viewGame.status === 'pending'}
+  <div class="setup">
+    <div class="player-count-picker">
+      <small class="dimmed">{i18n.players}</small>
+      <div class="count-tiles">
+        {#each ['2','3','4'] as n}
+          <button
+            class="count-tile"
+            class:selected={game.length === n}
+            on:click={() => { game.length = n; updateLength(); }}
+          >{n}</button>
+        {/each}
+      </div>
+    </div>
+    <div class="seat-list">
+      {#each pendingPlayers as id (id)}
+        <div class="seat" class:dimmed={false}>
+          <input
+            class="seat-name"
+            type="text"
+            value={getDisplayName(id)}
+            placeholder={defaultNames[id] || id}
+            on:change={e => setDisplayName(id, e.currentTarget.value)}
+            readonly={id === 'p1' ? false : false}
+          />
+          <button
+            class="seat-type"
+            class:is-bot={isBot(id)}
+            disabled={id === 'p1'}
+            on:click={() => toggleBot(id)}
+            title={isBot(id) ? i18n.bot : i18n.human}
+          >
+            {#if isBot(id)}<SvgIcon name="robot" />{:else}<SvgIcon name="at" />{/if}
+          </button>
+        </div>
+      {/each}
+    </div>
+    <button class="deal-btn action" on:click={startGame} tabindex="-1">
+      <SvgIcon name="enter" />
+      {i18n.deal}
+    </button>
+  </div>
+{/if}
 
+<div class="game-board">
   {#if viewGame.status === 'started'}
+    <div class="table-center">
+      <span class="pot" data-board-pot>
+        <Card type="deck" number={viewGame.deck.length}>
+          {#if viewGame.triumph}<Card value={viewGame.triumph} />{/if}
+        </Card>
+      </span>
+    </div>
+
     <ul data-players>
       {#each viewGame.players as name (name)}
         <li class="player" class:active={viewGame.turn === name && !viewGame[name].played}>
@@ -686,18 +748,15 @@
                 disabled={isReplaying || viewGame.turn !== name || viewGame[name].played || (autoCheck && !isBot(name))}
                 on:click={drawCards}
             >
-                <SvgIcon name="at" size="14" />
-                <span class="player-name">{name}</span>
+                <span class="player-name">{getDisplayName(name)}</span>
                 <span class="icons flex">
-                    {#if name === viewGame.winner}
-                    <SvgIcon name="star" fill="gold" />
-                    {/if}
-                    {#if isBot(name)}
-                    <SvgIcon name="robot"/>
-                    {/if}
+                    {#if name === viewGame.winner}<SvgIcon name="star" fill="gold" />{/if}
+                    {#if isBot(name)}<SvgIcon name="robot"/>{/if}
                 </span>
             </button>
-            <span class="player-score">{viewGame[name].stack.length} cards</span>
+            <span class="player-score">
+              {viewGame[name].stack.reduce((s, c) => s + (BRISCA_VALUES[c.number] || 0), 0)} pts
+            </span>
           </div>
           <div class="player-cards">
             {#each viewGame[name].set as card (`${card.kind}:${card.number}`)}
@@ -707,17 +766,8 @@
         </li>
       {/each}
     </ul>
-  {/if}
 
-  <span class="board-action">
-    {#if viewGame.status === 'pending'}
-      <button class="action" on:click={startGame} tabindex="-1">
-        <SvgIcon name="enter" />
-        START
-      </button>
-    {/if}
-
-    {#if viewGame.status === 'started'}
+    <span class="board-action">
       <span class="commit-controls">
         <button
           class="action flex space"
@@ -726,7 +776,7 @@
           disabled={isReplaying || autoCheck || !viewGame.players.every((x) => viewGame[x].played)}
         >
           <SvgIcon name="enter" />
-          OK
+          {i18n.ok}
         </button>
         <label class="auto-check flex center space">
           <input
@@ -736,17 +786,17 @@
             disabled={isReplaying}
             on:change={updateAutoCheck}
           />
-          <small>Auto OK</small>
+          <small>{i18n.autoOk}</small>
         </label>
       </span>
-    {/if}
-  </span>
+    </span>
+  {/if}
 </div>
 
 {#if viewGame.status === 'started' && remainingTurns > 0}
   <small class="flex space center dimmed">
     <SvgIcon name="repeat" size="12" />
-    <em>{remainingTurns} turns left</em>
+    <em>{i18n.turnsLeft(remainingTurns)}</em>
   </small>
 {/if}
 
@@ -790,7 +840,7 @@
     {#if cards.length}
       <h3 class="flex reset center">
         <SvgIcon name="at" />
-        {player}'s turn:
+        {getDisplayName(player)} — {i18n.yourTurn}
       </h3>
       <div class="card-picker">
         {#each cards as card, o (`${card.kind}:${card.number}`)}
@@ -809,7 +859,7 @@
           bind:checked={autoCheck}
           on:change={updateAutoCheck}
         />
-        <small>Auto OK</small>
+        <small>{i18n.autoOk}</small>
       </label>
     {:else}
       Loading...
