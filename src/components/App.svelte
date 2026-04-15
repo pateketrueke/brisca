@@ -21,6 +21,7 @@
     getTeammate,
     getTeamScore,
     isTeamGame,
+    getLegalCards,
   } from '../lib/shared/helpers';
 
   import SvgIcon from './SvgIcon.svelte';
@@ -552,7 +553,7 @@
   function drawCards() {
     if (isReplaying || isBot(game.turn)) return;
     player = game.turn;
-    cards = game[player].hand;
+    cards = getLegalCards(game, player).slice();
   }
 
   function playCard(name, card) {
@@ -590,9 +591,9 @@
   function isInvalid(card) {
     if (!game.deck.length && game.turn !== game.winner) {
       return isInvalidBrisca(
-        cards,
+        game[player]?.hand || cards,
         card,
-        game[game.winner].set[0],
+        game[game.winner]?.set[0],
         game.triumph
       );
     }
