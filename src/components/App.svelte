@@ -131,14 +131,21 @@
   let game = { ...EMPTY_GAME };
   try {
     if (localStorage.$game) {
-      game = JSON.parse(localStorage.$game);
-      game.status = game.status !== 'finished' ? game.status : 'pending';
-      if (game.status !== 'pending' && !game.history) {
-        game = { ...game, history: [clone(withoutHistory(game))], cursor: 0 };
+      const saved = JSON.parse(localStorage.$game);
+      // validate minimum shape before trusting saved state
+      if (saved && Array.isArray(saved.players) && saved.players.length >= 2) {
+        game = saved;
+        game.status = game.status !== 'finished' ? game.status : 'pending';
+        if (game.status !== 'pending' && !game.history) {
+          game = { ...game, history: [clone(withoutHistory(game))], cursor: 0 };
+        }
+      } else {
+        // corrupt state — wipe it
+        localStorage.removeItem('$game');
       }
     }
   } catch {
-    // ignore
+    localStorage.removeItem('$game');
   }
 
   $: viewGame = getVisibleGame(game);
@@ -631,6 +638,7 @@
     if (!game.deck.length && game.turn !== game.winner) {
       const hand = game[player]?.hand || cards;
       const opener = game[game.winner]?.set[0];
+      log('isInvalid', { card: `${card.kind}:${card.number}`, opener: opener ? `${opener.kind}:${opener.number}` : null, handLen: hand.length });
       if (opener) return isInvalidBrisca(hand, card, opener, game.triumph);
     }
   }
