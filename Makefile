@@ -29,6 +29,7 @@ dist: deps
 	@(git worktree remove $(src) --force > /dev/null 2>&1) || true
 	@git worktree add $(src) $(target)
 	@NODE_ENV=production npx vite build
+	@rm -rf $(src)/* && cp -r dist/www/* $(src)/
 
 deps:
 	@(((ls node_modules | grep .) > /dev/null 2>&1) || npm i) || true
