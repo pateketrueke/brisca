@@ -462,6 +462,49 @@ header {
   }
 }
 
+.rules-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    line-height: 1.6;
+    font-size: 0.9rem;
+  }
+}
+
+.rules-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 1rem;
+}
+
+.rules-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  td {
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--border);
+
+    &:last-child {
+      text-align: right;
+      font-weight: 600;
+      color: var(--accent);
+    }
+  }
+}
+
 .card-picker {
   display: flex;
   flex-wrap: wrap;

@@ -183,6 +183,8 @@
     // ignore
   }
 
+  let showRules = false;
+
   $: defaultNames = i18n.defaultNames;
   function getDisplayName(id) {
     return playerNames[id] || defaultNames[id] || id;
@@ -725,6 +727,31 @@
       <SvgIcon name="enter" />
       {i18n.deal}
     </button>
+    <button class="link" on:click={() => showRules = true} tabindex="-1">
+      {i18n.howToPlay}
+    </button>
+  </div>
+{/if}
+
+{#if showRules}
+  <div class="overlay shown" on:click|self={() => showRules = false}>
+    <div class="rules-panel">
+      <button class="rules-close link" on:click={() => showRules = false}>✕</button>
+      <h2>{i18n.rules.title}</h2>
+      <p>{i18n.rules.intro}</p>
+      <p>{i18n.rules.deck}</p>
+      <p><strong>{i18n.rules.values}</strong></p>
+      <table class="rules-table">
+        {#each i18n.rules.valueRows as [card, pts]}
+          <tr><td>{card}</td><td>{pts}</td></tr>
+        {/each}
+      </table>
+      <p>{i18n.rules.triumph}</p>
+      <p>{i18n.rules.turn}</p>
+      <p>{i18n.rules.draw}</p>
+      <p>{i18n.rules.lastRound}</p>
+      <p><strong>{i18n.rules.winning}</strong></p>
+    </div>
   </div>
 {/if}
 
