@@ -216,9 +216,9 @@
   let peekingTeammate = false; // showing teammate's cards in picker
   let peekedLocal = false;    // local flag while syncGame propagates
 
-  // peeked is persisted in game state as game.peeked (set of player IDs who already peeked this round)
+  // peeked is persisted directly on game (not in timeline snapshots) so it survives reloads
   function hasPeeked(playerName) {
-    return (viewGame.peeked || []).includes(playerName);
+    return (game.peeked || []).includes(playerName);
   }
 
   function canPeekTeammate(playerName) {
@@ -236,7 +236,9 @@
   function peekTeammate() {
     peekingTeammate = true;
     peekedLocal = true;
-    syncGame({ ...game, peeked: [...(game.peeked || []), player] });
+    const newPeeked = [...(game.peeked || []), player];
+    log('peekTeammate', { player, newPeeked });
+    syncGame({ ...game, peeked: newPeeked });
   }
 
   function returnCards() {
