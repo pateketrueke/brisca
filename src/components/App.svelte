@@ -389,8 +389,10 @@
   }
 
   let pending;
+  let checking = false;
   function checkPlay() {
-    if (isReplaying) return;
+    if (isReplaying || checking) return;
+    checking = true;
 
     let winner;
     game.ordered.forEach((player) => {
@@ -487,10 +489,9 @@
           syncGame({ ...EMPTY_GAME });
         }
       );
+      checking = false;
       return;
     }
-
-    syncGame({ ...game, winner: winner.player });
 
     if (autoCheck) {
       showToast(i18n.winsHand(getDisplayName(winner.player)));
@@ -501,7 +502,9 @@
         turn: winner.player,
         winner: winner.player,
       });
+      checking = false;
     } else {
+      syncGame({ ...game, winner: winner.player });
       pending = setDialog(
         {
           icon: 'at',
@@ -510,6 +513,7 @@
         },
         () => {
           pending = undefined;
+          checking = false;
           syncGame({
             ...game,
             ...users,
@@ -649,7 +653,8 @@
     (autoCheck || hasBots()) &&
     !player &&
     !customDialog &&
-    !isReplaying
+    !isReplaying &&
+    !checking
   ) {
     clearTimeout(botCheckTimeout);
     botCheckTimeout = setTimeout(checkPlay, 500);
