@@ -786,30 +786,52 @@
 
 <div id="app">
 <header>
-  <h1 title="{i18n.title}">
-    <a href="/" class="logo">
-      {@html BriscaIcon}
-    </a>
-  </h1>
-  <span class="header-controls">
-    <button class="link" tabindex="-1" on:click={() => showAbout = true}>{VERSION}</button>
-    /
-    {#if viewGame.status === 'started'}
-      <button
-        class="link"
-        tabindex="-1"
-        disabled={canceling || isReplaying}
-        on:click={cancelGame}>{i18n.exit}</button>
+  {#if viewGame.status === 'started'}
+    <div class="table-center" data-board-pot>
+      <div class="felt">
+        <div class="felt-deck">
+          <Card type="deck" number={viewGame.deck.length}>
+            {#if viewGame.triumph}
+              <span class="card triumph-card"
+                data-cardset="{viewGame.triumph.kind}:{viewGame.triumph.number}"
+                title="{viewGame.triumph.number} of {viewGame.triumph.kind}"
+              >
+                <sub>{viewGame.triumph.number}</sub>
+                <small>{viewGame.triumph.kind}</small>
+                <sup>{viewGame.triumph.number}</sup>
+              </span>
+            {/if}
+          </Card>
+        </div>
+      </div>
+    </div>
+  {/if}
+  <div>
+    <h1 title="{i18n.title}">
+      <a href="/" class="logo">
+        {@html BriscaIcon}
+      </a>
+    </h1>
+    <span class="header-controls">
+      <button class="link" tabindex="-1" on:click={() => showAbout = true}>{VERSION}</button>
       /
-    {/if}
-    <button class="link" tabindex="-1" on:click={toggleLang}>
-      {lang === 'en' ? 'ES' : 'EN'}
-    </button>
-    /
-    <button class="link" tabindex="-1" on:click={toggleTheme}>
-      {theme === 'dark' ? '☀︎' : '☽'}
-    </button>
-  </span>
+      {#if viewGame.status === 'started'}
+        <button
+          class="link"
+          tabindex="-1"
+          disabled={canceling || isReplaying}
+          on:click={cancelGame}>{i18n.exit}</button>
+        /
+      {/if}
+      <button class="link" tabindex="-1" on:click={toggleLang}>
+        {lang === 'en' ? 'ES' : 'EN'}
+      </button>
+      /
+      <button class="link" tabindex="-1" on:click={toggleTheme}>
+        {theme === 'dark' ? '☀︎' : '☽'}
+      </button>
+    </span>
+  </div>
 </header>
 
 {#if viewGame.status === 'pending'}
@@ -890,25 +912,6 @@
 
 <div class="game-board">
   {#if viewGame.status === 'started'}
-    <div class="table-center" data-board-pot>
-      <div class="felt">
-        <div class="felt-deck">
-          <Card type="deck" number={viewGame.deck.length}>
-            {#if viewGame.triumph}
-              <span class="card triumph-card"
-                data-cardset="{viewGame.triumph.kind}:{viewGame.triumph.number}"
-                title="{viewGame.triumph.number} of {viewGame.triumph.kind}"
-              >
-                <sub>{viewGame.triumph.number}</sub>
-                <small>{viewGame.triumph.kind}</small>
-                <sup>{viewGame.triumph.number}</sup>
-              </span>
-            {/if}
-          </Card>
-        </div>
-      </div>
-    </div>
-
     <ul data-players>
       {#each viewGame.players as name (name)}
         <li class="player flex" class:active={viewGame.turn === name && !viewGame[name].played}>
