@@ -32,7 +32,7 @@ dist: deps
 	@git worktree add $(src) $(target)
 	@NODE_ENV=production npx vite build
 	@rm -rf $(src)/* && cp -r dist/www/* $(src)/
-	@echo "ba.soypache.co" > $(src)/CNAME
+	@echo "b4.soypache.co" > $(src)/CNAME
 	@touch $(src)/.nojekyll
 
 deps:

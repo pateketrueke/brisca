@@ -27,3 +27,4 @@ vite.config.ts.timestamp-*
 AGENTS.md
 *TASKS.md
 .claude
+.journal
