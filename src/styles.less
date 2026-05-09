@@ -144,6 +144,122 @@ header {
   max-width: 360px;
 }
 
+.room-panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--surface), var(--surface-alt));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.room-panel-header,
+.room-peer,
+.room-actions,
+.room-role-picker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.room-callout,
+.room-join,
+.room-roster,
+.room-seat-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.room-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.room-share,
+.room-code-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.room-peer {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.room-seat-picker {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.seat-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+
+  &.selected {
+    border-color: var(--btn-border);
+    box-shadow: 0 0 0 1px var(--btn-border);
+  }
+
+  &.busy {
+    opacity: 0.72;
+  }
+}
+
+.room-role-picker .action,
+.room-actions .action {
+  flex: 1;
+  justify-content: center;
+}
+
+.room-role-picker .action.selected {
+  background: var(--btn-border);
+  color: var(--bg);
+}
+
+.room-error {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.85rem;
+}
+
+.room-status-bar,
+.room-status-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.room-status-bar {
+  width: 100%;
+  max-width: 400px;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
 .player-count-picker {
   display: flex;
   flex-direction: column;

@@ -27,6 +27,20 @@
   import SvgIcon from './SvgIcon.svelte';
   import Dialog from './Dialog.svelte';
   import Card from './Card.svelte';
+  import RoomLobby from './RoomLobby.svelte';
+  import {
+    p2pStore,
+    createRoom,
+    joinRoom,
+    leaveRoom,
+    updateJoinRole,
+    updateJoinSeat,
+    broadcastState,
+    sendAction,
+    sendError,
+    onState,
+    onAction,
+  } from '../lib/p2p';
 
   const VERSION = import.meta.env.GIT_REVISION || 'HEAD';
 
@@ -66,6 +80,35 @@
     delete rest.history;
     delete rest.cursor;
     return rest;
+  }
+
+  function sameCard(left, right) {
+    return !!left && !!right && left.kind === right.kind && left.number === right.number;
+  }
+
+  function filterStateForPeer(state, connection) {
+    const filtered = clone(withoutHistory(state));
+    const revealSeats = new Set();
+
+    if (connection.role === 'player' && connection.seat) {
+      revealSeats.add(connection.seat);
+
+      if (filtered.peeked?.includes(connection.seat)) {
+        const teammate = getTeammate(connection.seat);
+        if (teammate) revealSeats.add(teammate);
+      }
+    }
+
+    (filtered.players || []).forEach((name) => {
+      if (!revealSeats.has(name)) {
+        filtered[name] = {
+          ...filtered[name],
+          hand: [],
+        };
+      }
+    });
+
+    return filtered;
   }
 
   /**
@@ -149,6 +192,7 @@
   }
 
   $: viewGame = getVisibleGame(game);
+  $: p2p = $p2pStore;
   $: isReplaying =
     viewGame.status !== 'pending' && game.cursor < (game.history?.length || 0) - 1;
   $: remainingTurns =
@@ -166,6 +210,15 @@
   );
   $: currentBots = viewGame.bots || [];
   $: timelineLength = game.history?.length || 0;
+  $: remoteSeats = new Set(
+    p2p.peers
+      .filter((peer) => peer.role === 'player' && peer.seat && peer.seat !== 'p1')
+      .map((peer) => peer.seat)
+  );
+  $: shareUrl =
+    typeof window !== 'undefined' && p2p.roomCode
+      ? `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(p2p.roomCode)}`
+      : '';
 
   // Debug logging — only active with ?debug=1
   function log(event, data = {}) {
@@ -214,6 +267,9 @@
   let showRules = false;
   let showAbout = false;
   let inlinePicker = false;
+  let joinCode = '';
+  let lastPeerSyncKey = '';
+  let roomPromptOpen = false;
 
   const REPO_URL = 'https://github.com/pateketrueke/brisca';
   let peekingTeammate = false; // showing teammate's cards in picker
@@ -236,11 +292,18 @@
     return result;
   }
 
-  function peekTeammate() {
+  function peekTeammate(actor = player) {
+    if (p2p.mode === 'guest') {
+      peekingTeammate = true;
+      peekedLocal = true;
+      sendAction('peekTeammate', [actor]);
+      return;
+    }
+
     peekingTeammate = true;
     peekedLocal = true;
-    const newPeeked = [...(game.peeked || []), player];
-    log('peekTeammate', { player, newPeeked });
+    const newPeeked = [...(game.peeked || []), actor];
+    log('peekTeammate', { player: actor, newPeeked });
     syncGame({ ...game, peeked: newPeeked });
   }
 
@@ -260,6 +323,59 @@
     const mq = window.matchMedia('(min-width: 720px)');
     inlinePicker = mq.matches;
     mq.addEventListener('change', e => { inlinePicker = e.matches; });
+
+    const url = new URL(window.location.href);
+    joinCode = url.searchParams.get('room') || '';
+    roomPromptOpen = !!joinCode;
+
+    const stopRemoteState = onState((payload) => {
+      if (payload?.playerNames) {
+        playerNames = payload.playerNames;
+      }
+      syncGame(payload?.game || payload, { remote: true });
+    });
+    const stopRemoteAction = onAction((message, connection) => {
+      if (!message?.name) return;
+
+      if (message.name === 'playCard') {
+        const [name, card] = message.args || [];
+        if (connection.seat !== name || game.turn !== name) {
+          sendError(connection.peerId, 'Invalid seat for this turn');
+          return;
+        }
+
+        const actualCard = game[name]?.hand?.find((entry) => sameCard(entry, card));
+        if (!actualCard) {
+          sendError(connection.peerId, 'Card is no longer available');
+          return;
+        }
+
+        const legalCards = getLegalCards(game, name);
+        if (!legalCards.some((entry) => sameCard(entry, actualCard))) {
+          sendError(connection.peerId, 'Illegal move for the current trick');
+          return;
+        }
+
+        playCard(name, actualCard);
+        return;
+      }
+
+      if (message.name === 'checkPlay') {
+        if (allPlayed) checkPlay();
+        return;
+      }
+
+      if (message.name === 'peekTeammate') {
+        if (connection.seat && canPeekTeammate(connection.seat)) {
+          peekTeammate(connection.seat);
+        }
+      }
+    });
+
+    return () => {
+      stopRemoteState();
+      stopRemoteAction();
+    };
   });
 
   $: defaultNames = i18n.defaultNames;
@@ -324,7 +440,8 @@
     return customDialog;
   }
 
-  function syncGame(state) {
+  function syncGame(state, options = {}) {
+    const { remote = false } = options;
     let next = state;
     if (next.status === 'started' || next.status === 'finished') {
       const snapshot = clone(withoutHistory(next));
@@ -346,6 +463,25 @@
     } catch {
       // ignore
     }
+
+    if (!remote && p2p.mode === 'host') {
+      broadcastState((connection) => ({
+        game: filterStateForPeer(next, connection),
+        playerNames,
+      }));
+    }
+  }
+
+  function isSeatControlledLocally(name) {
+    if (p2p.mode === 'guest') {
+      return p2p.requestedRole === 'player' && p2p.seat === name;
+    }
+
+    if (p2p.mode === 'host') {
+      return name === 'p1' || !remoteSeats.has(name);
+    }
+
+    return true;
   }
 
   function normalizeBots(length = game.length, bots = game.bots || []) {
@@ -384,6 +520,8 @@
   }
 
   function startGame() {
+    if (p2p.mode === 'guest') return;
+
     const cardset = random(getBriscaDeck());
 
     if (game.length === '3') {
@@ -428,6 +566,11 @@
   let pending;
   let checking = false;
   function checkPlay() {
+    if (p2p.mode === 'guest') {
+      sendAction('checkPlay');
+      return;
+    }
+
     if (isReplaying || checking) return;
     checking = true;
     log('checkPlay:start');
@@ -600,7 +743,7 @@
   let cards = [];
   let selected = -1;
   function drawCards() {
-    if (isReplaying || isBot(game.turn)) return;
+    if (isReplaying || isBot(game.turn) || !isSeatControlledLocally(game.turn)) return;
     player = game.turn;
     cards = game[player].hand.slice();
     log('drawCards', { player, cards: cards.length });
@@ -608,12 +751,24 @@
 
   function playCard(name, card) {
     if (isReplaying) return;
+
+    if (p2p.mode === 'guest') {
+      if (p2p.requestedRole !== 'player' || p2p.seat !== name) return;
+      sendAction('playCard', [name, card]);
+      cards = [];
+      selected = -1;
+      peekingTeammate = false;
+      peekedLocal = false;
+      player = undefined;
+      return;
+    }
+
     log('playCard', { name, card: `${card.kind}:${card.number}` });
 
     const offset = game.players.findIndex((x) => name === x);
     const next = (offset + 1) % game.players.length;
     const hand = game[name].hand.slice();
-    const idx = hand.findIndex((x) => x === card);
+    const idx = hand.findIndex((x) => sameCard(x, card));
     const set = hand.splice(idx, 1);
 
     syncGame({
@@ -782,6 +937,76 @@
       clearTimeout(autoDrawTimeout);
     };
   });
+
+  function setRoomQuery(value) {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    if (value) url.searchParams.set('room', value);
+    else url.searchParams.delete('room');
+    history.replaceState({}, '', url);
+  }
+
+  function handleCreateRoom() {
+    createRoom({ seat: 'p1' });
+    roomPromptOpen = false;
+  }
+
+  function handleJoinRoom() {
+    const value = joinCode.trim();
+    if (!value) return;
+    joinRoom(value, { role: p2p.requestedRole, seat: p2p.seat });
+    roomPromptOpen = false;
+  }
+
+  function handleLeaveRoom() {
+    leaveRoom();
+    setRoomQuery('');
+    roomPromptOpen = false;
+  }
+
+  async function handleCopyRoomLink() {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      showToast('Room link copied');
+    } catch {
+      showToast('Copy failed');
+    }
+  }
+
+  $: if (p2p.roomCode) {
+    setRoomQuery(p2p.roomCode);
+  }
+
+  $: {
+    const peerSyncKey = JSON.stringify(
+      p2p.peers.map(({ peerId, role, seat }) => ({ peerId, role, seat }))
+    );
+
+    if (p2p.mode === 'host' && game.status !== 'pending' && peerSyncKey !== lastPeerSyncKey) {
+      lastPeerSyncKey = peerSyncKey;
+      broadcastState((connection) => ({
+        game: filterStateForPeer(game, connection),
+        playerNames,
+      }));
+    }
+
+    if (p2p.mode !== 'host') {
+      lastPeerSyncKey = '';
+    }
+  }
+
+  $: if (p2p.mode === 'host' && game.status === 'pending') {
+    const claimedSeats = Array.from(remoteSeats);
+    const nextBots = normalizeBots(game.length).filter((name) => !claimedSeats.includes(name));
+    if (JSON.stringify(nextBots) !== JSON.stringify(game.bots || [])) {
+      game = { ...game, bots: nextBots };
+    }
+  }
+
+  $: if (joinCode && p2p.mode === 'offline') {
+    roomPromptOpen = true;
+  }
 </script>
 
 <div id="app">
@@ -834,8 +1059,50 @@
   </div>
 </header>
 
+{#if p2p.mode !== 'offline'}
+  <div class="room-status-bar">
+    <small>
+      {#if p2p.mode === 'host'}
+        Room {p2p.roomCode} · {p2p.peers.length} connected
+      {:else}
+        Joined room {p2p.roomCode} as {p2p.requestedRole}{#if p2p.requestedRole === 'player'} {p2p.seat}{/if}
+      {/if}
+    </small>
+    <div class="room-status-actions">
+      {#if p2p.mode === 'host'}
+        <button class="link" type="button" on:click={handleCopyRoomLink}>Copy link</button>
+      {/if}
+      <button class="link" type="button" on:click={handleLeaveRoom}>
+        {p2p.mode === 'host' ? 'Close room' : 'Leave room'}
+      </button>
+    </div>
+  </div>
+{/if}
+
 {#if viewGame.status === 'pending'}
   <div class="setup">
+    <RoomLobby
+      pendingPlayers={pendingPlayers}
+      mode={p2p.mode}
+      status={p2p.status}
+      roomCode={p2p.roomCode}
+      joinCode={joinCode}
+      requestedRole={p2p.requestedRole}
+      selectedSeat={p2p.seat}
+      peers={p2p.peers}
+      shareUrl={shareUrl}
+      error={p2p.error}
+      linkDetected={roomPromptOpen}
+      canCreate={p2p.mode !== 'guest'}
+      canJoin={joinCode.trim().length > 0 && p2p.mode !== 'host'}
+      onCreateRoom={handleCreateRoom}
+      onJoinRoom={handleJoinRoom}
+      onLeaveRoom={handleLeaveRoom}
+      onCopyLink={handleCopyRoomLink}
+      onJoinCodeInput={(value) => { joinCode = value; }}
+      onRequestedRoleChange={updateJoinRole}
+      onSelectedSeatChange={updateJoinSeat}
+    />
     <div class="player-count-picker">
       <small class="dimmed">{i18n.players}</small>
       <div class="count-tiles">
@@ -843,6 +1110,7 @@
           <button
             class="count-tile"
             class:selected={game.length === n}
+            disabled={p2p.mode === 'guest'}
             on:click={() => { game.length = n; updateLength(); }}
           >{n}</button>
         {/each}
@@ -857,12 +1125,12 @@
             value={getDisplayName(id)}
             placeholder={defaultNames[id] || id}
             on:change={e => setDisplayName(id, e.currentTarget.value)}
-            readonly={id === 'p1' ? false : false}
+            readonly={p2p.mode === 'guest'}
           />
           <button
             class="seat-type"
             class:is-bot={currentBots.includes(id)}
-            disabled={id === 'p1'}
+            disabled={id === 'p1' || p2p.mode === 'guest' || remoteSeats.has(id)}
             on:click={() => toggleBot(id)}
             title={currentBots.includes(id) ? i18n.bot : i18n.human}
           >
@@ -871,7 +1139,7 @@
         </div>
       {/each}
     </div>
-    <button class="deal-btn action" on:click={startGame} tabindex="-1">
+    <button class="deal-btn action" disabled={p2p.mode === 'guest'} on:click={startGame} tabindex="-1">
       <SvgIcon name="enter" />
       {i18n.deal}
     </button>
@@ -942,7 +1210,7 @@
             <button
                 class="action"
                 tabindex="-1"
-                disabled={isReplaying || viewGame.turn !== name || viewGame[name].played || (autoCheck && !isBot(name))}
+                disabled={isReplaying || viewGame.turn !== name || viewGame[name].played || (autoCheck && !isBot(name)) || !isSeatControlledLocally(name)}
                 on:click={drawCards}
             >
                 <span class="player-name">{getDisplayName(name)}</span>

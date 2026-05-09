@@ -14,6 +14,9 @@
 		"lint": "eslint ."
 	},
 	"type": "module",
+	"dependencies": {
+		"peerjs": "^1.5.5"
+	},
 	"devDependencies": {
 		"@eslint/compat": "^1.4.0",
 		"@eslint/js": "^9.38.0",
