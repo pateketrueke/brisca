@@ -572,6 +572,7 @@
     }
 
     if (isReplaying || checking) return;
+    if (!game.ordered?.every(p => game[p]?.set?.length > 0)) return;
     checking = true;
     log('checkPlay:start');
 
