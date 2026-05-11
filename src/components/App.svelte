@@ -1061,19 +1061,22 @@
 
 {#if p2p.mode !== 'offline'}
   <div class="room-status-bar">
-    <small>
-      {#if p2p.mode === 'host'}
-        Room {p2p.roomCode} · {p2p.peers.length} connected
-      {:else}
-        Joined room {p2p.roomCode} as {p2p.requestedRole}{#if p2p.requestedRole === 'player'} {p2p.seat}{/if}
-      {/if}
-    </small>
+    <div class="room-status-info">
+      <span class="room-status-dot" data-status={p2p.status}></span>
+      <small>
+        {#if p2p.mode === 'host'}
+          <strong>{p2p.roomCode}</strong> · {p2p.peers.length} {i18n.room.connected}
+        {:else}
+          {i18n.room.roomLabel} <strong>{p2p.roomCode}</strong> · {i18n.room.roles[p2p.requestedRole] ?? p2p.requestedRole}{#if p2p.requestedRole === 'player'}, {i18n.room.seatLabel} {p2p.seat?.slice(1)}{/if}
+        {/if}
+      </small>
+    </div>
     <div class="room-status-actions">
       {#if p2p.mode === 'host'}
-        <button class="link" type="button" on:click={handleCopyRoomLink}>Copy link</button>
+        <button class="link" type="button" on:click={handleCopyRoomLink}>{i18n.room.copyLink}</button>
       {/if}
       <button class="link" type="button" on:click={handleLeaveRoom}>
-        {p2p.mode === 'host' ? 'Close room' : 'Leave room'}
+        {p2p.mode === 'host' ? i18n.room.close : i18n.room.leave}
       </button>
     </div>
   </div>
@@ -1095,6 +1098,7 @@
       linkDetected={roomPromptOpen}
       canCreate={p2p.mode !== 'guest'}
       canJoin={joinCode.trim().length > 0 && p2p.mode !== 'host'}
+      i18n={i18n.room}
       onCreateRoom={handleCreateRoom}
       onJoinRoom={handleJoinRoom}
       onLeaveRoom={handleLeaveRoom}
