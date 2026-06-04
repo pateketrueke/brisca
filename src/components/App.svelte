@@ -185,11 +185,11 @@
         }
       } else {
         // corrupt state — wipe it
-        localStorage.removeItem('$game');
+        try { localStorage.removeItem('$game'); } catch { /* ignore */ }
       }
     }
   } catch {
-    localStorage.removeItem('$game');
+    try { localStorage.removeItem('$game'); } catch { /* ignore */ }
   }
 
   $: viewGame = getVisibleGame(game);
