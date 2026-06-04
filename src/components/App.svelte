@@ -40,6 +40,7 @@
     sendError,
     onState,
     onAction,
+    generateRoomName,
   } from '../lib/p2p';
 
   const VERSION = import.meta.env.GIT_REVISION || 'HEAD';
@@ -268,6 +269,7 @@
   let showAbout = false;
   let inlinePicker = false;
   let joinCode = '';
+  let roomName = generateRoomName();
   let lastPeerSyncKey = '';
   let roomPromptOpen = false;
 
@@ -948,7 +950,7 @@
   }
 
   function handleCreateRoom() {
-    createRoom({ seat: 'p1' });
+    createRoom({ seat: 'p1', roomName: roomName.trim() || generateRoomName() });
     roomPromptOpen = false;
   }
 
@@ -1105,6 +1107,8 @@
       onLeaveRoom={handleLeaveRoom}
       onCopyLink={handleCopyRoomLink}
       onJoinCodeInput={(value) => { joinCode = value; }}
+      roomName={roomName}
+      onRoomNameInput={(value) => { roomName = value; }}
       onRequestedRoleChange={updateJoinRole}
       onSelectedSeatChange={updateJoinSeat}
     />

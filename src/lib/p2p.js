@@ -1,6 +1,16 @@
 import { writable } from 'svelte/store';
 import { Peer } from 'peerjs';
 
+const ADJECTIVES = ['amber','bold','brave','bright','calm','clever','cool','crisp','daring','dawn','eager','fair','fast','fiery','fleet','gentle','grand','happy','keen','kind','lively','lucky','merry','nimble','noble','proud','quick','quiet','rapid','sharp','shiny','silver','smart','speedy','steady','strong','sunny','swift','tall','warm','wild','wise','young'];
+const NOUNS = ['arrow','bear','brook','castle','cloud','comet','creek','crown','dagger','dale','eagle','falcon','field','flame','forest','gem','hawk','hill','island','jade','lake','leaf','lion','maple','moon','oak','petal','pine','river','rock','rose','ruby','shore','sky','snow','star','stone','storm','stream','sun','tide','tiger','vale','wave','wind','wolf'];
+
+export function generateRoomName() {
+  const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+  const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+  const num = Math.floor(Math.random() * 90) + 10;
+  return `${adj}-${noun}-${num}`;
+}
+
 const INITIAL_STATE = {
   mode: 'offline',
   status: 'idle',
@@ -238,9 +248,11 @@ function attachHostConnection(connection) {
   });
 }
 
-export function createRoom({ seat = 'p1' } = {}) {
+export function createRoom({ seat = 'p1', roomName } = {}) {
   if (!isBrowser()) return;
   resetRoomState();
+
+  const id = roomName?.trim() || generateRoomName();
 
   updateStore({
     mode: 'host',
@@ -249,10 +261,10 @@ export function createRoom({ seat = 'p1' } = {}) {
     requestedRole: 'player',
   });
 
-  peer = new Peer();
-  peer.on('open', (id) => {
-    roster.set(id, {
-      peerId: id,
+  peer = new Peer(id);
+  peer.on('open', (peerId) => {
+    roster.set(peerId, {
+      peerId,
       role: 'host',
       seat,
       status: 'connected',
@@ -260,14 +272,20 @@ export function createRoom({ seat = 'p1' } = {}) {
     updateStore({
       mode: 'host',
       status: 'connected',
-      peerId: id,
-      roomCode: id,
+      peerId,
+      roomCode: peerId,
       error: '',
     });
     syncPeers();
   });
   peer.on('connection', attachHostConnection);
-  peer.on('error', (error) => setError(error?.message || 'Peer startup failed'));
+  peer.on('error', (error) => {
+    if (error?.type === 'unavailable-id') {
+      setError(`Room "${id}" is already taken — try a different name`);
+    } else {
+      setError(error?.message || 'Peer startup failed');
+    }
+  });
   peer.on('close', () => updateStore({ status: 'closed' }));
 }
 

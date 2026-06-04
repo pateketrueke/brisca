@@ -4,6 +4,7 @@
     mode = 'offline',
     status = 'idle',
     roomCode = '',
+    roomName = '',
     joinCode = '',
     requestedRole = 'player',
     selectedSeat = 'p2',
@@ -19,6 +20,7 @@
     onLeaveRoom = undefined,
     onCopyLink = undefined,
     onJoinCodeInput = undefined,
+    onRoomNameInput = undefined,
     onRequestedRoleChange = undefined,
     onSelectedSeatChange = undefined,
   } = $props();
@@ -105,6 +107,16 @@
               <small>{occupant ? (i18n.taken ?? 'taken') : (i18n.open ?? 'open')}</small>
             </button>
           {/each}
+        </div>
+      {/if}
+      {#if canCreate}
+        <div class="room-name-row">
+          <input
+            class="room-code-input"
+            placeholder={i18n.roomNamePlaceholder ?? 'Room name (auto-generated)'}
+            value={roomName}
+            oninput={(event) => onRoomNameInput?.(event.currentTarget.value)}
+          />
         </div>
       {/if}
       <div class="room-actions">
